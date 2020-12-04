@@ -1,8 +1,5 @@
-//////////////////////////////////////////////////////////
-// This class has been automatically generated on
-// Sun Nov 29 07:45:27 2020 by ROOT version 6.22/02
-// from TTree egHLTTree/
-// found on file: /eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/rate_study_cmsweek/qcdstd.root
+/////////////////
+//file:   /eos/cms/store/group/dpg_trigger/comm_trigger/TriggerStudiesGroup/Upgrade/EGM_PhaseII/mc/11_1_4/ntup/QCD_Pt_170to300_TuneCP5_14TeV_pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_Nov16thEM.root
 //////////////////////////////////////////////////////////
 
 #ifndef GetRates_h
@@ -26,7 +23,9 @@ public :
    UInt_t          runnr;
    UInt_t          lumiSec;
    UInt_t          eventnr;
-   Float_t         weight;
+   Float_t         weightV1;
+   Float_t         weightV2;
+   Float_t         weightV2NoEM;
    UInt_t          nrEgs;
    Float_t         eg_hltisov72[8];   //[nrEgs]
    Float_t         eg_trkMissHits[8];   //[nrEgs]
@@ -122,7 +121,9 @@ public :
    TBranch        *b_runnr;   //!
    TBranch        *b_lumiSec;   //!
    TBranch        *b_eventnr;   //!
-   TBranch        *b_weight;   //!
+   TBranch        *b_weightV1;   //!
+   TBranch        *b_weightV2;   //!
+   TBranch        *b_weightV2NoEM;   //!
    TBranch        *b_nrEgs;   //!
    TBranch        *b_eg_hltisov72;   //!
    TBranch        *b_eg_trkMissHits;   //!
@@ -233,12 +234,12 @@ GetRates::GetRates(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/rate_study_cmsweek/qcdstd.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/eos/cms/store/group/dpg_trigger/comm_trigger/TriggerStudiesGroup/Upgrade/EGM_PhaseII/mc/11_1_4/ntup/QCD_Pt_170to300_TuneCP5_14TeV_pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_Nov16thEM.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("/eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/rate_study_cmsweek/qcdstd.root");
+         f = new TFile("/eos/cms/store/group/dpg_trigger/comm_trigger/TriggerStudiesGroup/Upgrade/EGM_PhaseII/mc/11_1_4/ntup/QCD_Pt_170to300_TuneCP5_14TeV_pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_Nov16thEM.root");
       }
       f->GetObject("egHLTTree",tree);
-      std::cout << "qcdstd.root" << std::endl;
+      std::cout << "/eos/cms/store/group/dpg_trigger/comm_trigger/TriggerStudiesGroup/Upgrade/EGM_PhaseII/mc/11_1_4/ntup/QCD_Pt_170to300_TuneCP5_14TeV_pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_Nov16thEM.root" << std::endl;
 
    }
    Init(tree);
@@ -288,7 +289,9 @@ void GetRates::Init(TTree *tree)
    fChain->SetBranchAddress("runnr", &runnr, &b_runnr);
    fChain->SetBranchAddress("lumiSec", &lumiSec, &b_lumiSec);
    fChain->SetBranchAddress("eventnr", &eventnr, &b_eventnr);
-   fChain->SetBranchAddress("weight", &weight, &b_weight);
+   fChain->SetBranchAddress("weightV1", &weightV1, &b_weightV1);
+   fChain->SetBranchAddress("weightV2", &weightV2, &b_weightV2);
+   fChain->SetBranchAddress("weightV2NoEM", &weightV2NoEM, &b_weightV2NoEM);
    fChain->SetBranchAddress("nrEgs", &nrEgs, &b_nrEgs);
    fChain->SetBranchAddress("eg_hltisov72", eg_hltisov72, &b_eg_hltisov72);
    fChain->SetBranchAddress("eg_trkMissHits", eg_trkMissHits, &b_eg_trkMissHits);

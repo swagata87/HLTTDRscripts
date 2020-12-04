@@ -8,83 +8,46 @@
 
 void GetRates::Loop()
 {
-//   In a ROOT session, you can do:
-//      root> .L GetRates.C
-//      root> GetRates t
-//      root> t.GetEntry(12); // Fill t data members with entry number 12
-//      root> t.Show();       // Show values of entry 12
-//      root> t.Show(16);     // Read and show values of entry 16
-//      root> t.Loop();       // Loop on all entries
-//
-
-//     This is the loop skeleton where:
-//    jentry is the global entry number in the chain
-//    ientry is the entry number in the current Tree
-//  Note that the argument to GetEntry must be:
-//    jentry for TChain::GetEntry
-//    ientry for TTree::GetEntry and TBranch::GetEntry
-//
-//       To read only selected branches, Insert statements like:
-// METHOD1:
-//    fChain->SetBranchStatus("*",0);  // disable all branches
-//    fChain->SetBranchStatus("branchname",1);  // activate branchname
-// METHOD2: replace line
-//    fChain->GetEntry(jentry);       //read all branches
-//by  b_branchname->GetEntry(ientry); //read only this branch
+  ///
    if (fChain == 0) return;
 
    Long64_t nentries = fChain->GetEntriesFast();
 
-   int reject_EMenriched=1; // this should be 1 only for QCD STD, otherwise 0
-   std::cout << "reject_EMenriched " << reject_EMenriched << std::endl;
    float myweight=0;
-
+   float sum_myweight=0;
    float nEvt_passed=0.;
+   float nEvt_passed_wt=0.;
    
    float pt_cut=32.0;
    std::cout << "pt cut " << pt_cut << std::endl;
    Long64_t nbytes = 0, nb = 0;
 
    /////////
-   ////LOOP
+   ////EVENT LOOP
    /////////
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
-      Long64_t ientry = LoadTree(jentry);
-      if (ientry < 0) break;
-      nb = fChain->GetEntry(jentry);   nbytes += nb;
-      // if (Cut(ientry) < 0) continue;
-      //std::cout << "\neventnr " << eventnr << std::endl;
-      if ( (reject_EMenriched==1) && (path_Gen_QCDEmEnrichingNoBCToEFilter==true) ) {
-	//std::cout << "passed path_Gen_QCDEmEnrichingNoBCToEFilter, reject event " << std::endl;
-	continue;
-      } 
-      //std::cout << "weight " << weight << std::endl;
-      //std::cout << "nrEgs " << nrEgs << std::endl;
-      //std::cout << "eg_energy " << *eg_energy << std::endl;      
+     Long64_t ientry = LoadTree(jentry);
+     if (ientry < 0) break;
+     nb = fChain->GetEntry(jentry);   nbytes += nb;
+     myweight=weightV2;
 
-      if (weight>0) {
-	myweight=weight;
-	}
-      //      std::cout << "start egamma loop " << std::endl;
-      ////
-      /////LOOP ele
-      ////
+     ////
+     /////LOOP ele
+     ////
       int nEle_passed=0;
       for (int i=0; i<nrEgs; i++) {
-	//std::cout << i << std::endl;
-	//std::cout << eg_energy[i] << std::endl;
 
 	//// Barrel cuts
-	float ecaliso_cut_EB=4.8;  //6.0;
-	float hcaliso_cut_EB=9.5; //13;
+	float ecaliso_cut_EB= 6.0; //4.8;  //6.0;
+	float hcaliso_cut_EB= 13.0; //9.5; //13;
 	if ( ( fabs(eg_eta[i]) > 0.8 ) && ( fabs(eg_eta[i]) < 1.479 )  ) {
-	  hcaliso_cut_EB =15.0;  //18;
+	  hcaliso_cut_EB =18; //15.0;  //18;
 	}
-	float pms2_cut_EB=42.0; //55.0;
-	float sieie_cut_EB=0.012; //0.013;
+	float pms2_cut_EB= 55.0; //42.0; //55.0;
+	float sieie_cut_EB=0.013; //0.012; //0.013;
 	float hoe_EB = (eg_hcalHForHoverE[i])/(eg_energy[i]);
-	float hoe_cut_EB =0.17;  //0.25;
-	float ooemoop_cut_EB =0.035;  //0.04;
+	float hoe_cut_EB = 0.25; //0.17;  //0.25;
+	float ooemoop_cut_EB = 0.04; //0.035;  //0.04;
 	if ( ( fabs(eg_eta[i]) > 0.8 ) && ( fabs(eg_eta[i]) < 1.479 )  ) {
 	  ooemoop_cut_EB = 0.08;
 	}
@@ -98,8 +61,8 @@ void GetRates::Loop()
 	}
 	float npix_cut_EB = 2;
 	float chi2_cut_EB = 50.0;
-	float trkisohlt_cut_EB =2.4; //3.5;
-	float trkisol1_cut_EB = 4.0; //5.5;
+	float trkisohlt_cut_EB =3.5; //2.4; //3.5;
+	float trkisol1_cut_EB =5.5; // 4.0; //5.5;
 	if ( ( fabs(eg_eta[i]) > 0.8 ) && ( fabs(eg_eta[i]) < 1.479 )  ) {
 	  trkisol1_cut_EB = 8.0;
 	}
@@ -108,19 +71,19 @@ void GetRates::Loop()
 	////endcap cuts
 	float hoe_EE = (eg_hgcalHForHoverE[i])/(eg_energy[i]);
 	float hoe_cut_EE = 0.15 + (5.0/(eg_energy[i]));
-	float vv_cut_EE = 0.8*0.8;  //0.9*0.9;
-	float ww_cut_EE = 8*8;  //9*9;
-	float hgcaliso_cut_EE = 130.0; //150.0;
+	float vv_cut_EE = 0.9*0.9; //0.8*0.8;  //0.9*0.9;
+	float ww_cut_EE = 9*9; //8*8;  //9*9;
+	float hgcaliso_cut_EE = 150.0; //130.0; //150.0;
 	if ( ( fabs(eg_eta[i]) > 2.0 ) ) {
-	  hgcaliso_cut_EE = 340.0;  //350;
+	  hgcaliso_cut_EE =350; // 340.0;  //350;
 	}
-	float pms2_cut_EE= 65.0; //75.0;
-	float ooemoop_cut_EE = 0.01; //0.04;
-	float deta_cut_EE = 0.003; //0.004;
-	float dphi_cut_EE = 0.02; //0.04;
+	float pms2_cut_EE= 75.0; //65.0; //75.0;
+	float ooemoop_cut_EE = 0.04; //0.01; //0.04;
+	float deta_cut_EE =0.004;  //0.003; //0.004;
+	float dphi_cut_EE = 0.04;  //0.02; //0.04;
 	float npix_cut_EE = 2;
 	float chi2_cut_EE = 50.0;
-	float trkisohlt_cut_EE = 2.0; //3.0;
+	float trkisohlt_cut_EE = 3.0; //2.0; //3.0;
 	float trkisol1_cut_EE = 5.5;
 	/// end of endcap cuts
 
@@ -176,7 +139,9 @@ void GetRates::Loop()
 	  passL1=true;
 	}
 
-	if ( (weight>0.) && (eg_et[i]>pt_cut) &&  
+	if ( 
+	    (myweight>0.) && 
+	    (eg_et[i]>pt_cut) &&  
 	     (passL1) && 
 	     (hoe<hoe_cut) &&  
 	     (eg_sigma2vv[i]<vv_cut_EE) &&  
@@ -188,7 +153,7 @@ void GetRates::Loop()
 	     (eg_trkDPhi[i]<dphi_cut) && 
 	     (eg_nLayerIT[i]>npix_cut) && 
 	     (eg_normChi2[i]<chi2_cut) &&  
-	     ///(eg_hltisov6[i]<trkisohlt_cut) && 
+	     (eg_hltisov6[i]<trkisohlt_cut) && 
 	     (eg_l1iso[i]<trkisol1_cut) &&
 	     (eg_ecaliso[i]<ecaliso_cut_EB ) && 
 	     (eg_hcaliso[i]<hcaliso_cut_EB) && 
@@ -201,17 +166,19 @@ void GetRates::Loop()
       } ////end of ele loop
       
       if ( nEle_passed>0 ) {  
-	//	nEvt_passed = nEvt_passed+1;
-	nEvt_passed = nEvt_passed+weight;
+	nEvt_passed = nEvt_passed+1;
+	nEvt_passed_wt = nEvt_passed_wt+myweight;
+	sum_myweight=sum_myweight+myweight;
+
       }
    }
 
-   std::cout << "myweight " << myweight << std::endl;
+   //std::cout << "sum_myweight " << sum_myweight << std::endl;
    std::cout << "nEvt_passed " << nEvt_passed << std::endl;
-   //std::cout << "rate " << myweight*nEvt_passed << std::endl;
-   std::cout << "rate " << nEvt_passed << std::endl;   
-   //std::cout << "rate error " << myweight * sqrt(nEvt_passed) << std::endl;
-   if (nEvt_passed==0) {
-     std::cout << "correct rate error for 0 event = " << myweight*1.84;
-   }
+   float avg_myweight = sum_myweight/nEvt_passed;
+   // std::cout << "avg_myweight = sum_myweight/nEvt_passed = " << avg_myweight << std::endl;
+
+   std::cout << "rate " << nEvt_passed_wt << std::endl;   
+   std::cout << "rate error " << avg_myweight * sqrt(nEvt_passed) << std::endl;
+
 }
