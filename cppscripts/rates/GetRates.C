@@ -18,7 +18,7 @@ void GetRates::Loop()
    float nEvt_passed=0.;
    float nEvt_passed_wt=0.;
 
-   bool WP_tight = 1;
+   bool WP_tight = 0;
    std::cout << "WP_tight " << WP_tight << std::endl;
    if (WP_tight) {
      std::cout << "running WP tight, 70% eff" << std::endl;
@@ -44,9 +44,8 @@ void GetRates::Loop()
      ////
       int nEle_passed=0;
       for (int i=0; i<nrEgs; i++) {
-	//	var = (y < 10) ? 30 : 40;
-	  //// Barrel cuts
-	float ecaliso_cut_EB= (WP_tight==1) ? 4.8 : 6.0; 
+	//// Barrel cuts
+	float ecaliso_cut_EB= (WP_tight==1) ? 4.8 : 7.5; 
 	float hcaliso_cut_EB= (WP_tight==1) ? 9.5 : 13.0; 
 	if ( ( fabs(eg_eta[i]) > 0.8 ) && ( fabs(eg_eta[i]) < 1.479 )  ) {
 	  hcaliso_cut_EB = (WP_tight==1) ? 15.0 : 18.0; 
@@ -69,7 +68,7 @@ void GetRates::Loop()
 	}
 	float npix_cut_EB = (WP_tight==1) ? 2 : 2;
 	float chi2_cut_EB = (WP_tight==1) ? 50.0 : 50.0;
-	float trkisohlt_cut_EB = (WP_tight==1) ? 2.0 : 3.0;
+	float trkisohlt_cut_EB = (WP_tight==1) ? 2.0 : 2.5;
 	float trkisol1_cut_EB = (WP_tight==1) ? 4.0 : 5.5; 
 	if ( ( fabs(eg_eta[i]) > 0.8 ) && ( fabs(eg_eta[i]) < 1.479 )  ) {
 	  trkisol1_cut_EB = (WP_tight==1) ? 8.0 : 8.0;
@@ -91,7 +90,7 @@ void GetRates::Loop()
 	float dphi_cut_EE = (WP_tight==1) ? 0.02 : 0.04;
 	float npix_cut_EE = (WP_tight==1) ? 2 : 2;
 	float chi2_cut_EE = (WP_tight==1) ? 50.0 : 50.0;
-	float trkisohlt_cut_EE = (WP_tight==1) ? 1.5 : 2.3; 
+	float trkisohlt_cut_EE = (WP_tight==1) ? 1.5 : 2.2; 
 	float trkisol1_cut_EE = (WP_tight==1) ? 5.5 : 5.5;
 	/// end of endcap cuts
 	

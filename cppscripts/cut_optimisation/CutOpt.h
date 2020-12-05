@@ -2,7 +2,7 @@
 // This class has been automatically generated on
 // Thu Nov 26 15:26:55 2020 by ROOT version 6.20/07
 // from TTree egHLTTree/
-// found on file: /eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/rate_study_cmsweek/DY.root
+// found on file: /eos/cms/store/group/dpg_trigger/comm_trigger/TriggerStudiesGroup/Upgrade/EGM_PhaseII/mc/11_1_4/ntup/DYToLL_M-50_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_pilot_Nov16thEM.root
 //////////////////////////////////////////////////////////
 
 #ifndef CutOpt_h
@@ -11,6 +11,7 @@
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
+#include <iostream>
 
 // Header file for the classes stored in the TTree if any.
 
@@ -25,7 +26,7 @@ public :
    UInt_t          runnr;
    UInt_t          lumiSec;
    UInt_t          eventnr;
-   Float_t         weight;
+   //   Float_t         weight;
    UInt_t          nrEgs;
    Float_t         eg_hltisov72[8];   //[nrEgs]
    Float_t         eg_trkMissHits[8];   //[nrEgs]
@@ -121,7 +122,7 @@ public :
    TBranch        *b_runnr;   //!
    TBranch        *b_lumiSec;   //!
    TBranch        *b_eventnr;   //!
-   TBranch        *b_weight;   //!
+   //   TBranch        *b_weight;   //!
    TBranch        *b_nrEgs;   //!
    TBranch        *b_eg_hltisov72;   //!
    TBranch        *b_eg_trkMissHits;   //!
@@ -232,12 +233,12 @@ CutOpt::CutOpt(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/rate_study_cmsweek/DY.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/eos/cms/store/group/dpg_trigger/comm_trigger/TriggerStudiesGroup/Upgrade/EGM_PhaseII/mc/11_1_4/ntup/DYToLL_M-50_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_pilot_Nov16thEM.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("/eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/rate_study_cmsweek/DY.root");
+         f = new TFile("/eos/cms/store/group/dpg_trigger/comm_trigger/TriggerStudiesGroup/Upgrade/EGM_PhaseII/mc/11_1_4/ntup/DYToLL_M-50_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_pilot_Nov16thEM.root");
       }
       f->GetObject("egHLTTree",tree);
-
+      std::cout << "/eos/cms/store/group/dpg_trigger/comm_trigger/TriggerStudiesGroup/Upgrade/EGM_PhaseII/mc/11_1_4/ntup/DYToLL_M-50_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_pilot_Nov16thEM.root" << std::endl;
    }
    Init(tree);
 }
@@ -286,7 +287,7 @@ void CutOpt::Init(TTree *tree)
    fChain->SetBranchAddress("runnr", &runnr, &b_runnr);
    fChain->SetBranchAddress("lumiSec", &lumiSec, &b_lumiSec);
    fChain->SetBranchAddress("eventnr", &eventnr, &b_eventnr);
-   fChain->SetBranchAddress("weight", &weight, &b_weight);
+   // fChain->SetBranchAddress("weight", &weight, &b_weight);
    fChain->SetBranchAddress("nrEgs", &nrEgs, &b_nrEgs);
    fChain->SetBranchAddress("eg_hltisov72", eg_hltisov72, &b_eg_hltisov72);
    fChain->SetBranchAddress("eg_trkMissHits", eg_trkMissHits, &b_eg_trkMissHits);
