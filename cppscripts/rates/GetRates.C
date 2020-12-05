@@ -17,7 +17,15 @@ void GetRates::Loop()
    float sum2_myweight=0;
    float nEvt_passed=0.;
    float nEvt_passed_wt=0.;
-   
+
+   bool WP_tight = 1;
+   std::cout << "WP_tight " << WP_tight << std::endl;
+   if (WP_tight) {
+     std::cout << "running WP tight, 70% eff" << std::endl;
+   }
+   else {
+     std::cout << "running WP loose, 80% eff" << std::endl;
+   }
    float pt_cut=32.0;
    std::cout << "pt cut " << pt_cut << std::endl;
    Long64_t nbytes = 0, nb = 0;
@@ -36,59 +44,57 @@ void GetRates::Loop()
      ////
       int nEle_passed=0;
       for (int i=0; i<nrEgs; i++) {
-
-	//// Barrel cuts
-	float ecaliso_cut_EB= 6.0; //4.8;  //6.0;
-	float hcaliso_cut_EB= 13.0; //9.5; //13;
+	//	var = (y < 10) ? 30 : 40;
+	  //// Barrel cuts
+	float ecaliso_cut_EB= (WP_tight==1) ? 4.8 : 6.0; 
+	float hcaliso_cut_EB= (WP_tight==1) ? 9.5 : 13.0; 
 	if ( ( fabs(eg_eta[i]) > 0.8 ) && ( fabs(eg_eta[i]) < 1.479 )  ) {
-	  hcaliso_cut_EB =18; //15.0;  //18;
+	  hcaliso_cut_EB = (WP_tight==1) ? 15.0 : 18.0; 
 	}
-	float pms2_cut_EB= 55.0; //42.0; //55.0;
-	float sieie_cut_EB=0.0129; //0.012; //0.013;
+	float pms2_cut_EB= (WP_tight==1) ? 42.0 : 55.0; 
+	float sieie_cut_EB= (WP_tight==1) ? 0.0115 : 0.0129; 
 	float hoe_EB = (eg_hcalHForHoverE[i])/(eg_energy[i]);
-	float hoe_cut_EB = 0.175; //0.17;  //0.25;
-	float ooemoop_cut_EB = 0.04; //0.035;  //0.04;
+	float hoe_cut_EB = (WP_tight==1) ? 0.17 : 0.175; 
+	float ooemoop_cut_EB = (WP_tight==1) ? 0.035 : 0.04;
 	if ( ( fabs(eg_eta[i]) > 0.8 ) && ( fabs(eg_eta[i]) < 1.479 )  ) {
-	  ooemoop_cut_EB = 0.08;
+	  ooemoop_cut_EB = (WP_tight==1) ? 0.08: 0.08;
 	}
-	float deta_cut_EB = 0.003;
+	float deta_cut_EB = (WP_tight==1) ? 0.003 : 0.003;
 	if ( ( fabs(eg_eta[i]) > 0.8 ) && ( fabs(eg_eta[i]) < 1.479 )  ) {
-	  deta_cut_EB = 0.009;
+	  deta_cut_EB = (WP_tight==1) ? 0.009 : 0.009;
 	}
-	float dphi_cut_EB = 0.02;
+	float dphi_cut_EB = (WP_tight==1) ? 0.02 : 0.02;
 	if ( ( fabs(eg_eta[i]) > 0.8 ) && ( fabs(eg_eta[i]) < 1.479 )  ) {
-	  dphi_cut_EB = 0.09;
+	  dphi_cut_EB = (WP_tight==1) ? 0.09 : 0.09;
 	}
-	float npix_cut_EB = 2;
-	float chi2_cut_EB = 50.0;
-	float trkisohlt_cut_EB =3.0; //2.4; //3.5;
-	float trkisol1_cut_EB =5.5; // 4.0; //5.5;
+	float npix_cut_EB = (WP_tight==1) ? 2 : 2;
+	float chi2_cut_EB = (WP_tight==1) ? 50.0 : 50.0;
+	float trkisohlt_cut_EB = (WP_tight==1) ? 2.0 : 3.0;
+	float trkisol1_cut_EB = (WP_tight==1) ? 4.0 : 5.5; 
 	if ( ( fabs(eg_eta[i]) > 0.8 ) && ( fabs(eg_eta[i]) < 1.479 )  ) {
-	  trkisol1_cut_EB = 8.0;
+	  trkisol1_cut_EB = (WP_tight==1) ? 8.0 : 8.0;
 	}
-	//	float mhit_cut_EB = 999;
 	////end of barrel cuts
-
+	
 	////endcap cuts
 	float hoe_EE = (eg_hgcalHForHoverE[i])/(eg_energy[i]);
-	float hoe_cut_EE = 0.15 + (5.0/(eg_energy[i]));
-	float vv_cut_EE = 0.85*0.85; //0.8*0.8;  //0.9*0.9;
-	float ww_cut_EE = 8.5*8.5; //8*8;  //9*9;
-	float hgcaliso_cut_EE = 150.0; //130.0; //150.0;
+	float hoe_cut_EE = (WP_tight==1) ? 0.15 + (5.0/(eg_energy[i])) : 0.15 + (5.0/(eg_energy[i]));
+	float vv_cut_EE = (WP_tight==1) ? 0.8*0.8 : 0.85*0.85; 
+	float ww_cut_EE = (WP_tight==1) ? 8*8 : 8.5*8.5; 
+	float hgcaliso_cut_EE = (WP_tight==1) ? 130.0 : 150.0;
 	if ( ( fabs(eg_eta[i]) > 2.0 ) ) {
-	  hgcaliso_cut_EE =350; // 340.0;  //350;
+	  hgcaliso_cut_EE = (WP_tight==1) ? 340.0 : 350.0;
 	}
-	float pms2_cut_EE= 75.0; //65.0; //75.0;
-	float ooemoop_cut_EE = 0.04; //0.01; //0.04;
-	float deta_cut_EE =0.004;  //0.003; //0.004;
-	float dphi_cut_EE = 0.04;  //0.02; //0.04;
-	float npix_cut_EE = 2;
-	float chi2_cut_EE = 50.0;
-	float trkisohlt_cut_EE = 2.3; //2.0; //3.0;
-	float trkisol1_cut_EE = 5.5;
-	//float mhit_cut_EE = 2;
+	float pms2_cut_EE= (WP_tight==1) ? 65.0 : 75.0;
+	float ooemoop_cut_EE = (WP_tight==1) ? 0.01 : 0.04;
+	float deta_cut_EE = (WP_tight==1) ? 0.003 : 0.004;
+	float dphi_cut_EE = (WP_tight==1) ? 0.02 : 0.04;
+	float npix_cut_EE = (WP_tight==1) ? 2 : 2;
+	float chi2_cut_EE = (WP_tight==1) ? 50.0 : 50.0;
+	float trkisohlt_cut_EE = (WP_tight==1) ? 1.5 : 2.3; 
+	float trkisol1_cut_EE = (WP_tight==1) ? 5.5 : 5.5;
 	/// end of endcap cuts
-
+	
 	/// for variables common for barrel and endcap, rename in a generic way that works for both barrel+endcap
 	float pms2_cut = 9999;
 	float hoe = 0;
@@ -100,7 +106,7 @@ void GetRates::Loop()
 	float chi2_cut = 9999;
 	float trkisohlt_cut = 9999;
 	float trkisol1_cut = 9999;
-	//float mhit_cut = 999;
+	
 
 	if ( fabs(eg_eta[i]) < 1.479 ) {
 	  pms2_cut = pms2_cut_EB;
@@ -113,7 +119,7 @@ void GetRates::Loop()
 	  chi2_cut = chi2_cut_EB;
 	  trkisohlt_cut = trkisohlt_cut_EB;
 	  trkisol1_cut = trkisol1_cut_EB;
-	  //mhit_cut = mhit_cut_EB;
+	 
 	}
 	else  {
 	  pms2_cut = pms2_cut_EE;
@@ -126,7 +132,7 @@ void GetRates::Loop()
 	  chi2_cut = chi2_cut_EE;
 	  trkisohlt_cut = trkisohlt_cut_EE;
 	  trkisol1_cut = trkisol1_cut_EE;
-	  //mhit_cut = mhit_cut_EE;
+	
 	}
 
 	////define L1 pass/fail
@@ -163,7 +169,7 @@ void GetRates::Loop()
 	     (eg_ecaliso[i]<ecaliso_cut_EB ) && 
 	     (eg_hcalPFIsol_default[i]<hcaliso_cut_EB) && 
 	     (eg_sigmaIEtaIEta[i]<sieie_cut_EB) 
-	     //(eg_trkMissHits[i]<mhit_cut) //mhit cut does not help to reduce rate 
+	   
 	     ) {
 	  nEle_passed=nEle_passed+1;
 	}
@@ -180,7 +186,7 @@ void GetRates::Loop()
    }
 
    std::cout << "nEvt_passed " << nEvt_passed << std::endl;
-   std::cout << "rate " << nEvt_passed_wt << std::endl;   
-   std::cout << "rate error " << sqrt(sum2_myweight) << std::endl;
+   std::cout << "rate " << nEvt_passed_wt ; 
+   std::cout << " +/- " << sqrt(sum2_myweight) << std::endl;
 
 }
