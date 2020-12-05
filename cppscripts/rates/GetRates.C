@@ -14,7 +14,7 @@ void GetRates::Loop()
    Long64_t nentries = fChain->GetEntriesFast();
 
    float myweight=0;
-   float sum_myweight=0;
+   float sum2_myweight=0;
    float nEvt_passed=0.;
    float nEvt_passed_wt=0.;
    
@@ -44,9 +44,9 @@ void GetRates::Loop()
 	  hcaliso_cut_EB =18; //15.0;  //18;
 	}
 	float pms2_cut_EB= 55.0; //42.0; //55.0;
-	float sieie_cut_EB=0.013; //0.012; //0.013;
+	float sieie_cut_EB=0.0129; //0.012; //0.013;
 	float hoe_EB = (eg_hcalHForHoverE[i])/(eg_energy[i]);
-	float hoe_cut_EB = 0.25; //0.17;  //0.25;
+	float hoe_cut_EB = 0.175; //0.17;  //0.25;
 	float ooemoop_cut_EB = 0.04; //0.035;  //0.04;
 	if ( ( fabs(eg_eta[i]) > 0.8 ) && ( fabs(eg_eta[i]) < 1.479 )  ) {
 	  ooemoop_cut_EB = 0.08;
@@ -61,18 +61,19 @@ void GetRates::Loop()
 	}
 	float npix_cut_EB = 2;
 	float chi2_cut_EB = 50.0;
-	float trkisohlt_cut_EB =3.5; //2.4; //3.5;
+	float trkisohlt_cut_EB =3.0; //2.4; //3.5;
 	float trkisol1_cut_EB =5.5; // 4.0; //5.5;
 	if ( ( fabs(eg_eta[i]) > 0.8 ) && ( fabs(eg_eta[i]) < 1.479 )  ) {
 	  trkisol1_cut_EB = 8.0;
 	}
+	//	float mhit_cut_EB = 999;
 	////end of barrel cuts
 
 	////endcap cuts
 	float hoe_EE = (eg_hgcalHForHoverE[i])/(eg_energy[i]);
 	float hoe_cut_EE = 0.15 + (5.0/(eg_energy[i]));
-	float vv_cut_EE = 0.9*0.9; //0.8*0.8;  //0.9*0.9;
-	float ww_cut_EE = 9*9; //8*8;  //9*9;
+	float vv_cut_EE = 0.85*0.85; //0.8*0.8;  //0.9*0.9;
+	float ww_cut_EE = 8.5*8.5; //8*8;  //9*9;
 	float hgcaliso_cut_EE = 150.0; //130.0; //150.0;
 	if ( ( fabs(eg_eta[i]) > 2.0 ) ) {
 	  hgcaliso_cut_EE =350; // 340.0;  //350;
@@ -83,8 +84,9 @@ void GetRates::Loop()
 	float dphi_cut_EE = 0.04;  //0.02; //0.04;
 	float npix_cut_EE = 2;
 	float chi2_cut_EE = 50.0;
-	float trkisohlt_cut_EE = 3.0; //2.0; //3.0;
+	float trkisohlt_cut_EE = 2.3; //2.0; //3.0;
 	float trkisol1_cut_EE = 5.5;
+	//float mhit_cut_EE = 2;
 	/// end of endcap cuts
 
 	/// for variables common for barrel and endcap, rename in a generic way that works for both barrel+endcap
@@ -98,6 +100,7 @@ void GetRates::Loop()
 	float chi2_cut = 9999;
 	float trkisohlt_cut = 9999;
 	float trkisol1_cut = 9999;
+	//float mhit_cut = 999;
 
 	if ( fabs(eg_eta[i]) < 1.479 ) {
 	  pms2_cut = pms2_cut_EB;
@@ -110,6 +113,7 @@ void GetRates::Loop()
 	  chi2_cut = chi2_cut_EB;
 	  trkisohlt_cut = trkisohlt_cut_EB;
 	  trkisol1_cut = trkisol1_cut_EB;
+	  //mhit_cut = mhit_cut_EB;
 	}
 	else  {
 	  pms2_cut = pms2_cut_EE;
@@ -122,6 +126,7 @@ void GetRates::Loop()
 	  chi2_cut = chi2_cut_EE;
 	  trkisohlt_cut = trkisohlt_cut_EE;
 	  trkisol1_cut = trkisol1_cut_EE;
+	  //mhit_cut = mhit_cut_EE;
 	}
 
 	////define L1 pass/fail
@@ -156,8 +161,9 @@ void GetRates::Loop()
 	     (eg_hltisov6[i]<trkisohlt_cut) && 
 	     (eg_l1iso[i]<trkisol1_cut) &&
 	     (eg_ecaliso[i]<ecaliso_cut_EB ) && 
-	     (eg_hcaliso[i]<hcaliso_cut_EB) && 
+	     (eg_hcalPFIsol_default[i]<hcaliso_cut_EB) && 
 	     (eg_sigmaIEtaIEta[i]<sieie_cut_EB) 
+	     //(eg_trkMissHits[i]<mhit_cut) //mhit cut does not help to reduce rate 
 	     ) {
 	  nEle_passed=nEle_passed+1;
 	}
@@ -168,17 +174,13 @@ void GetRates::Loop()
       if ( nEle_passed>0 ) {  
 	nEvt_passed = nEvt_passed+1;
 	nEvt_passed_wt = nEvt_passed_wt+myweight;
-	sum_myweight=sum_myweight+myweight;
+	sum2_myweight=sum2_myweight+(myweight*myweight);
 
       }
    }
 
-   //std::cout << "sum_myweight " << sum_myweight << std::endl;
    std::cout << "nEvt_passed " << nEvt_passed << std::endl;
-   float avg_myweight = sum_myweight/nEvt_passed;
-   // std::cout << "avg_myweight = sum_myweight/nEvt_passed = " << avg_myweight << std::endl;
-
    std::cout << "rate " << nEvt_passed_wt << std::endl;   
-   std::cout << "rate error " << avg_myweight * sqrt(nEvt_passed) << std::endl;
+   std::cout << "rate error " << sqrt(sum2_myweight) << std::endl;
 
 }

@@ -1,5 +1,5 @@
 /////////////////
-//file:   /eos/cms/store/group/dpg_trigger/comm_trigger/TriggerStudiesGroup/Upgrade/EGM_PhaseII/mc/11_1_4/ntup/QCD_Pt_170to300_TuneCP5_14TeV_pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_Nov16thEM.root
+//file:   /eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/hadd_Sam_Ntuple/all.root
 //////////////////////////////////////////////////////////
 
 #ifndef GetRates_h
@@ -234,12 +234,12 @@ GetRates::GetRates(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/eos/cms/store/group/dpg_trigger/comm_trigger/TriggerStudiesGroup/Upgrade/EGM_PhaseII/mc/11_1_4/ntup/QCD_Pt_170to300_TuneCP5_14TeV_pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_Nov16thEM.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/hadd_Sam_Ntuple/all.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("/eos/cms/store/group/dpg_trigger/comm_trigger/TriggerStudiesGroup/Upgrade/EGM_PhaseII/mc/11_1_4/ntup/QCD_Pt_170to300_TuneCP5_14TeV_pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_Nov16thEM.root");
+         f = new TFile("/eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/hadd_Sam_Ntuple/all.root");
       }
       f->GetObject("egHLTTree",tree);
-      std::cout << "/eos/cms/store/group/dpg_trigger/comm_trigger/TriggerStudiesGroup/Upgrade/EGM_PhaseII/mc/11_1_4/ntup/QCD_Pt_170to300_TuneCP5_14TeV_pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_Nov16thEM.root" << std::endl;
+      std::cout << "/eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/hadd_Sam_Ntuple/all.root" << std::endl;
 
    }
    Init(tree);
