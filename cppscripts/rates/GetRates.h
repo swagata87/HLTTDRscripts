@@ -221,7 +221,9 @@ public :
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
-   virtual void     Loop();
+   virtual void     SingleEle(float given_pt,float absEtaLow,float absEtaHigh);
+   virtual void     SinglePhoNonIso(float given_pt);
+   virtual void     DoubleEle(float given_pt);
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
 };
