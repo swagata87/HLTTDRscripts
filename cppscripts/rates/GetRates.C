@@ -200,7 +200,7 @@ void GetRates::SingleEle(float given_pt,float given_absEta_low=0.0,float given_a
 }
 
 /////////////////////  Single Photon nonIsolated /////////////
-
+//////// NOT YET FINALISED /////////
 void GetRates::SinglePhoNonIso(float given_pt)
 {
   std::cout << "running Single Photon NonIsolated" << std::endl;
@@ -348,7 +348,7 @@ void GetRates::DoubleEle(float given_pt=25.0)
 	
 	////endcap cuts // DoubleEle HLT  
 	float hoe_EE = (eg_hgcalHForHoverE[i])/(eg_energy[i]);
-	float hoe_cut_EE = 0.19; //0.15 + (5.0/(eg_energy[i]));
+	float hoe_cut_EE = 0.19; 
 	float vv_cut_EE = 0.8*0.8; 
 	float pms2_cut_EE= 75.0;
 	/// end of endcap cuts
@@ -443,6 +443,175 @@ void GetRates::DoubleEle(float given_pt=25.0)
 
       //there should be at least 1 ele passing leg1 cuts, at least 1 ele passing leg2 cuts, and these 2 ele must not be the same ele// 
       if ( nEle_passed_leg_1>0 && nEle_passed_leg_2>0 && indx_leg_12.size()>1 ) {  
+	nEvt_passed = nEvt_passed+1;
+	nEvt_passed_wt = nEvt_passed_wt+myweight;
+	sum2_myweight=sum2_myweight+(myweight*myweight);
+      }
+   }
+
+   std::cout << "nEvt_passed " << nEvt_passed << std::endl;
+   std::cout << "rate " << nEvt_passed_wt ; 
+   std::cout << " +/- " << sqrt(sum2_myweight) << std::endl;
+
+}
+
+///// diphoton trigger
+void GetRates::DoublePho(float given_pt1=30.0,float given_pt2=18.0)
+{
+  ///
+   std::cout << "Running DoublePho" << std::endl; 
+   if (fChain == 0) return;
+
+   Long64_t nentries = fChain->GetEntriesFast();
+
+   float myweight=0;
+   float sum2_myweight=0;
+   float nEvt_passed=0.;
+   float nEvt_passed_wt=0.;
+
+   float pt_cut1= given_pt1; 
+   float pt_cut2= given_pt2; 
+   std::cout << "pt cuts " << pt_cut1 << " , " << pt_cut2  << std::endl;
+   Long64_t nbytes = 0, nb = 0;
+
+   /////////
+   ////EVENT LOOP
+   /////////
+   for (Long64_t jentry=0; jentry<nentries;jentry++) {
+     // std::cout << "\nNEW EVT" << std::endl;
+     Long64_t ientry = LoadTree(jentry);
+     if (ientry < 0) break;
+     nb = fChain->GetEntry(jentry);   nbytes += nb;
+     myweight=weightV2;
+
+      int nPho_passed_leg_1=0;
+      int nPho_passed_leg_2=0;
+      std::vector<int> indx_leg_1;
+      std::vector<int> indx_leg_2;
+      std::vector<int> indx_leg_12;
+      indx_leg_12.clear();
+      indx_leg_1.clear();
+      indx_leg_2.clear();
+
+     ////
+     /////LOOP pho
+     ////
+      for (int i=0; i<nrEgs; i++) {
+	
+	//// Barrel cuts // DoublePho HLT
+	float sieie_cut_EB= 0.0113; 
+	float hoe_EB = (eg_hcalHForHoverE[i])/(eg_energy[i]);
+	float hoe_cut_EB = 0.18; 
+	float ecaliso_cut_EB=  8.5;
+	float hcaliso_cut_EB= 11;
+	if ( ( fabs(eg_eta[i]) > 0.8 ) && ( fabs(eg_eta[i]) < 1.479 )  ) {
+	  hcaliso_cut_EB = 12; 
+	}
+	////end of barrel cuts
+	
+	////endcap cuts // DoublePho HLT  
+	float hoe_EE = (eg_hgcalHForHoverE[i])/(eg_energy[i]);
+	float hoe_cut_EE = 0.125; 
+	float vv_cut_EE =0.8*0.8; 
+	float ww_cut_EE = 8*8;
+	float hgcaliso_cut_EE =140; 
+	if ( ( fabs(eg_eta[i]) > 2.0 ) ) {
+	  hgcaliso_cut_EE = 370; 
+	}
+	/// end of endcap cuts
+	
+	/// for variables common for barrel and endcap, rename in a generic way that works for both barrel+endcap
+	float hoe = 0;
+	float hoe_cut = 9999;
+
+	if ( fabs(eg_eta[i]) < 1.479 ) {
+	  hoe = hoe_EB;
+	  hoe_cut = hoe_cut_EB;
+	}
+	else  {
+	  hoe = hoe_EE;
+	  hoe_cut = hoe_cut_EE;
+	}
+
+	//	Double StaEG 37,24 
+	//      Double TkIsoPhoton 22, 12
+	///
+	////define L1 pass/fail, high pT leg
+	bool passL1_highpt = false;
+	if (  fabs(eg_eta[i]) > 2.4 ) {
+	  passL1_highpt=true;
+	}
+	if ( (fabs(eg_eta[i])<2.4) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>37.) && (eg_l1pho_passQual[i]) ) {
+	  passL1_highpt=true;
+	}
+	if ( (fabs(eg_eta[i])<2.4) && (eg_l1pho_et[i]>0) && (eg_l1pho_etThresIso[i]>22.) && (eg_l1pho_passQual[i]) && (eg_l1pho_passIsol[i]) ) {
+	  passL1_highpt=true;
+	}
+	/////////
+
+	////define L1 pass/fail, low pT leg
+	bool passL1_lowpt = false;
+	if (  fabs(eg_eta[i]) > 2.4 ) {
+	  passL1_lowpt=true;
+	}
+	if ( (fabs(eg_eta[i])<2.4) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>24.) && (eg_l1pho_passQual[i]) ) {
+	  passL1_lowpt=true;
+	}
+	if ( (fabs(eg_eta[i])<2.4) && (eg_l1pho_et[i]>0) && (eg_l1pho_etThresIso[i]>12.) && (eg_l1pho_passQual[i]) && (eg_l1pho_passIsol[i]) ) {
+	  passL1_lowpt=true;
+	}
+
+	////leg_1
+	if ( 
+	    (myweight>0.) && 
+	    (eg_et[i]>pt_cut1) &&  
+	    (passL1_highpt) && 
+	    (hoe<hoe_cut) &&  
+	    (eg_sigma2ww[i]<ww_cut_EE) &&
+	    (eg_hgcaliso_layerclus[i]<hgcaliso_cut_EE) && 
+	    (eg_ecaliso[i]<ecaliso_cut_EB ) && 
+	    (eg_hcalPFIsol_default[i]<hcaliso_cut_EB) && 
+	    (eg_sigma2vv[i]<vv_cut_EE) &&  
+	    (eg_sigmaIEtaIEta[i]<sieie_cut_EB) 
+	   
+	     ) {
+	  nPho_passed_leg_1=nPho_passed_leg_1+1; // how many pho passing leg1 cuts
+	  indx_leg_1.push_back(i); // what are their index
+	    }
+
+	////leg_2
+	if ( 
+	    (myweight>0.) && 
+	    (eg_et[i]>pt_cut2) &&  
+	    (passL1_lowpt) && 
+	    (hoe<hoe_cut) &&  
+	    (eg_sigma2ww[i]<ww_cut_EE) &&
+            (eg_hgcaliso_layerclus[i]<hgcaliso_cut_EE) &&
+            (eg_ecaliso[i]<ecaliso_cut_EB ) &&
+            (eg_hcalPFIsol_default[i]<hcaliso_cut_EB) &&
+	    (eg_sigma2vv[i]<vv_cut_EE) &&  
+	    (eg_sigmaIEtaIEta[i]<sieie_cut_EB) 
+	   
+	     ) {
+	  nPho_passed_leg_2=nPho_passed_leg_2+1; //how many pho passing leg2 cuts 
+	  indx_leg_2.push_back(i); // what are their index 
+	}
+      } ////end of pho loop
+
+      /// merge vectors indx_leg_1 & indx_leg_2 into indx_leg_12
+      indx_leg_12.insert(indx_leg_12.begin(), indx_leg_1.begin(), indx_leg_1.end());
+      indx_leg_12.insert(indx_leg_12.end(), indx_leg_2.begin(), indx_leg_2.end());
+
+      ///sort indx_leg_12
+      std::sort(indx_leg_12.begin(), indx_leg_12.end()); 
+
+      //// if an pho passed both leg1 cuts and leg2 cuts then their will be duplicate entries in indx_leg_12
+      ///remove duplicate entries from indx_leg_12
+      auto last = std::unique(indx_leg_12.begin(), indx_leg_12.end());
+      indx_leg_12.erase(last, indx_leg_12.end());
+
+      //there should be at least 1 pho passing leg1 cuts, at least 1 pho passing leg2 cuts, and these 2 pho must not be the same pho// 
+      if ( nPho_passed_leg_1>0 && nPho_passed_leg_2>0 && indx_leg_12.size()>1 ) {  
 	nEvt_passed = nEvt_passed+1;
 	nEvt_passed_wt = nEvt_passed_wt+myweight;
 	sum2_myweight=sum2_myweight+(myweight*myweight);
