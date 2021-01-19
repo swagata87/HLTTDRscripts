@@ -2,7 +2,7 @@
 // This class has been automatically generated on
 // Thu Nov 26 15:26:55 2020 by ROOT version 6.20/07
 // from TTree egHLTTree/
-// found on file: /eos/cms/store/group/dpg_trigger/comm_trigger/TriggerStudiesGroup/Upgrade/EGM_PhaseII/mc/11_1_4/ntup/DYToLL_M-50_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_pilot_Nov16thEM.root
+// found on file: /eos/cms/store/group/phys_egamma/swmukher/L1HighPtEffLoss/PU200_FixBySam/ZPrimeEE_fixedL1EG.root
 //////////////////////////////////////////////////////////
 
 #ifndef CutOpt_h
@@ -28,6 +28,7 @@ public :
    UInt_t          eventnr;
    //   Float_t         weight;
    UInt_t          nrEgs;
+   UInt_t         nrPtHats;
    Float_t         eg_hltisov72[8];   //[nrEgs]
    Float_t         eg_trkMissHits[8];   //[nrEgs]
    Float_t         eg_trkDEtaSeed[8];   //[nrEgs]
@@ -124,6 +125,7 @@ public :
    TBranch        *b_eventnr;   //!
    //   TBranch        *b_weight;   //!
    TBranch        *b_nrEgs;   //!
+   TBranch        *b_nrPtHats;
    TBranch        *b_eg_hltisov72;   //!
    TBranch        *b_eg_trkMissHits;   //!
    TBranch        *b_eg_trkDEtaSeed;   //!
@@ -220,7 +222,11 @@ public :
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
-   virtual void     Loop();
+   virtual void     SingleEle();
+   virtual void     DoubleEle();
+   virtual void     DoublePhoton();
+   virtual void     SinglePhoNonIso();
+   virtual void     SinglePhoIsoEBonly();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
 };
@@ -233,12 +239,12 @@ CutOpt::CutOpt(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/eos/cms/store/group/dpg_trigger/comm_trigger/TriggerStudiesGroup/Upgrade/EGM_PhaseII/mc/11_1_4/ntup/DYToLL_M-50_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_pilot_Nov16thEM.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/eos/cms/store/group/phys_egamma/swmukher/L1HighPtEffLoss/PU200_FixBySam/ZPrimeEE_fixedL1EG.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("/eos/cms/store/group/dpg_trigger/comm_trigger/TriggerStudiesGroup/Upgrade/EGM_PhaseII/mc/11_1_4/ntup/DYToLL_M-50_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_pilot_Nov16thEM.root");
+         f = new TFile("/eos/cms/store/group/phys_egamma/swmukher/L1HighPtEffLoss/PU200_FixBySam/ZPrimeEE_fixedL1EG.root");
       }
       f->GetObject("egHLTTree",tree);
-      std::cout << "/eos/cms/store/group/dpg_trigger/comm_trigger/TriggerStudiesGroup/Upgrade/EGM_PhaseII/mc/11_1_4/ntup/DYToLL_M-50_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_pilot_Nov16thEM.root" << std::endl;
+      std::cout << "/eos/cms/store/group/phys_egamma/swmukher/L1HighPtEffLoss/PU200_FixBySam/ZPrimeEE_fixedL1EG.root" << std::endl;
    }
    Init(tree);
 }
@@ -287,6 +293,7 @@ void CutOpt::Init(TTree *tree)
    fChain->SetBranchAddress("runnr", &runnr, &b_runnr);
    fChain->SetBranchAddress("lumiSec", &lumiSec, &b_lumiSec);
    fChain->SetBranchAddress("eventnr", &eventnr, &b_eventnr);
+   fChain->SetBranchAddress("nrPtHats", &nrPtHats, &b_nrPtHats);
    // fChain->SetBranchAddress("weight", &weight, &b_weight);
    fChain->SetBranchAddress("nrEgs", &nrEgs, &b_nrEgs);
    fChain->SetBranchAddress("eg_hltisov72", eg_hltisov72, &b_eg_hltisov72);

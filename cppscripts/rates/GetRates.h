@@ -223,7 +223,9 @@ public :
    virtual void     Init(TTree *tree);
    virtual void     SingleEle(float given_pt,float absEtaLow,float absEtaHigh);
    virtual void     SinglePhoNonIso(float given_pt);
+   virtual void     SinglePhoIsoEBonly(float given_pt);
    virtual void     DoubleEle(float given_pt);
+   virtual void     DoublePho(float given_pt1,float given_pt2);
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
 };

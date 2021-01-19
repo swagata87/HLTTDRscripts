@@ -200,7 +200,6 @@ void GetRates::SingleEle(float given_pt,float given_absEta_low=0.0,float given_a
 }
 
 /////////////////////  Single Photon nonIsolated /////////////
-//////// NOT YET FINALISED /////////
 void GetRates::SinglePhoNonIso(float given_pt)
 {
   std::cout << "running Single Photon NonIsolated" << std::endl;
@@ -232,7 +231,7 @@ void GetRates::SinglePhoNonIso(float given_pt)
     for (int i=0; i<nrEgs; i++) {
 
       //// Barrel cuts
-      float sieie_cut_EB= 0.013;
+      // float sieie_cut_EB= 0.013;
       float hoe_EB = (eg_hcalHForHoverE[i])/(eg_energy[i]);
       float hoe_cut_EB = 0.30;
        ////end of barrel cuts
@@ -240,8 +239,8 @@ void GetRates::SinglePhoNonIso(float given_pt)
       ////endcap cuts
       float hoe_EE = (eg_hgcalHForHoverE[i])/(eg_energy[i]);
       float hoe_cut_EE = 0.30;
-      float vv_cut_EE = 0.9*0.9;
-      float ww_cut_EE = 9*9;
+      //float vv_cut_EE = 0.9*0.9;
+      // float ww_cut_EE = 9*9;
       /// end of endcap cuts
       
       /// for variables common for barrel and endcap, rename in a generic way that works for both barrel+endcap
@@ -267,12 +266,12 @@ void GetRates::SinglePhoNonIso(float given_pt)
 
       if ( 
 	  (myweight>0.) && 
-	  (eg_et[i]>pt_cut) //&&  
-	  //(passL1) //&& 
-	  //(hoe<hoe_cut) &&  
-	  //(eg_sigma2vv[i]<vv_cut_EE) &&  
-	  //(eg_sigma2ww[i]<ww_cut_EE) &&
-	  //(eg_sigmaIEtaIEta[i]<sieie_cut_EB) 
+	  (eg_et[i]>pt_cut) &&  
+	  (passL1) && 
+	  (hoe<hoe_cut) // &&  
+	  // (eg_sigma2vv[i]<vv_cut_EE) &&  
+	  // (eg_sigma2ww[i]<ww_cut_EE) &&
+	  // (eg_sigmaIEtaIEta[i]<sieie_cut_EB) 
 	     
 	   ) {
 	nPho_Passed=nPho_Passed+1;
@@ -295,6 +294,87 @@ void GetRates::SinglePhoNonIso(float given_pt)
   std::cout << " +/- " << sqrt(sum2_myweight) << std::endl;
 
 }
+
+/////////////////Single photon isolated barrel-only /////////////////
+void GetRates::SinglePhoIsoEBonly(float given_pt)
+{
+  std::cout << "running Single Photon Isolated EBonly" << std::endl;
+  if (fChain == 0) return;
+  Long64_t nentries = fChain->GetEntriesFast();
+
+  float myweight=0;
+  float sum2_myweight=0;
+  float nEvt_passed=0.;
+  float nEvt_passed_wt=0.;
+
+  float pt_cut=given_pt;
+  std::cout << "pt cut " << pt_cut << std::endl;
+  Long64_t nbytes = 0, nb = 0;
+
+  /////////
+  ////EVENT LOOP
+  /////////
+  for (Long64_t jentry=0; jentry<nentries;jentry++) {
+    Long64_t ientry = LoadTree(jentry);
+    if (ientry < 0) break;
+    nb = fChain->GetEntry(jentry);   nbytes += nb;
+    myweight=weightV2;
+
+    ////
+    /////LOOP SC
+    ////
+    int nPho_Passed=0;
+    for (int i=0; i<nrEgs; i++) {
+
+      //// Barrel cuts
+      float sieie_cut_EB= 0.01;
+      float ecaliso_cut_EB= 3.0 + (0.02*eg_et[i]);
+      float hcaliso_cut_EB= 5.3 + (0.02*eg_et[i]);
+      float hoe_EB = (eg_hcalHForHoverE[i])/(eg_energy[i]);
+      float hoe_cut_EB = 0.05;
+       ////end of barrel cuts
+
+      bool passL1 = false;
+
+      if ( (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>51.) && (eg_l1pho_passQual[i]) ) {
+	passL1=true;
+      }
+
+      if ( (fabs(eg_eta[i])<2.4) && (eg_l1pho_et[i]>0) && (eg_l1pho_etThresIso[i]>36.) && (eg_l1pho_passQual[i]) && (eg_l1pho_passIsol[i]) ) {
+	passL1=true;
+      }
+
+      if ( 
+	  (myweight>0.) && 
+	  (eg_et[i]>pt_cut) &&
+	  ( fabs(eg_eta[i]) < 1.479) &&
+	  (passL1) && 
+	  (hoe_EB<hoe_cut_EB) &&	  
+	  (eg_ecaliso[i]<ecaliso_cut_EB ) && 
+	  (eg_hcalPFIsol_default[i]<hcaliso_cut_EB) && 
+	  (eg_sigmaIEtaIEta[i]<sieie_cut_EB) 
+	   ) {
+	nPho_Passed=nPho_Passed+1;
+      }
+
+
+    } ////end of ele loop
+      
+    if ( nPho_Passed>0 ) {  
+      nEvt_passed = nEvt_passed+1;
+      nEvt_passed_wt = nEvt_passed_wt+myweight;
+      sum2_myweight=sum2_myweight+(myweight*myweight);
+
+    }
+  }
+  
+  std::cout << "Photon Trigger Iso EB-only" << std::endl;
+  std::cout << "nEvt_passed " << nEvt_passed << std::endl;
+  std::cout << "rate " << nEvt_passed_wt ; 
+  std::cout << " +/- " << sqrt(sum2_myweight) << std::endl;
+
+}
+////
 
 /////// double Ele ////////
 void GetRates::DoubleEle(float given_pt=25.0)

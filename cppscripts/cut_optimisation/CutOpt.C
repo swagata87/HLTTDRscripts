@@ -5,36 +5,13 @@
 #include <TCanvas.h>
 #include <iostream>
 
-void CutOpt::Loop()
+void CutOpt::SingleEle()
 {
-//   In a ROOT session, you can do:
-//      root> .L CutOpt.C
-//      root> CutOpt t
-//      root> t.GetEntry(12); // Fill t data members with entry number 12
-//      root> t.Show();       // Show values of entry 12
-//      root> t.Show(16);     // Read and show values of entry 16
-//      root> t.Loop();       // Loop on all entries
-//
-
-//     This is the loop skeleton where:
-//    jentry is the global entry number in the chain
-//    ientry is the entry number in the current Tree
-//  Note that the argument to GetEntry must be:
-//    jentry for TChain::GetEntry
-//    ientry for TTree::GetEntry and TBranch::GetEntry
-//
-//       To read only selected branches, Insert statements like:
-// METHOD1:
-//    fChain->SetBranchStatus("*",0);  // disable all branches
-//    fChain->SetBranchStatus("branchname",1);  // activate branchname
-// METHOD2: replace line
-//    fChain->GetEntry(jentry);       //read all branches
-//by  b_branchname->GetEntry(ientry); //read only this branch
   if (fChain == 0) return;
   
   TFile* outputFile; // = new TFile("hist_DY_WP70.root","RECREATE");
 
-  bool WP_tight = 0;
+  bool WP_tight = 1;
   std::cout << "WP_tight " << WP_tight << std::endl;
   if (WP_tight) {
     std::cout << "running WP tight, 70% eff" << std::endl;
@@ -51,6 +28,15 @@ void CutOpt::Loop()
 
   const Int_t NBINS_pt = 14;
   Double_t edges_pt[NBINS_pt + 1] = {20,24,28,32,36,40,44,48,52,56,60,65,70,80,150};
+
+  const Int_t NBINS_pu = 8;
+  Double_t edges_pu[NBINS_pu + 1] = {150,170,180,190,200,210,220,230,250};
+
+  TH1D*  den_ele_PU_EB = new TH1D("den_ele_PU_EB", "den_ele_PU_EB", NBINS_pu, edges_pu); 
+  TH1D*  den_ele_PU_EE = new TH1D("den_ele_PU_EE", "den_ele_PU_EE", NBINS_pu, edges_pu); 
+
+  TH1D*  num_ele_PU_EB_all = new TH1D("num_ele_PU_EB_all", "num_ele_PU_EB_all", NBINS_pu, edges_pu); 
+  TH1D*  num_ele_PU_EE_all = new TH1D("num_ele_PU_EE_all", "num_ele_PU_EE_all", NBINS_pu, edges_pu); 
 
   TH1D*  num_ele_geneta_hoe = new TH1D("num_ele_geneta_hoe", "num_ele_geneta_hoe", NBINS_eta, edges_eta); 
   TH1D*  num_ele_geneta_vv = new TH1D("num_ele_geneta_vv", "num_ele_geneta_vv", NBINS_eta, edges_eta); 
@@ -302,7 +288,19 @@ void CutOpt::Loop()
 	}
 	
       } // endcap end
-      
+    
+      //PU , endcap
+      if ( (eg_gen_et[i]>40.0) && ((fabs(eg_eta[i]))>1.56) && ((fabs(eg_eta[i]))<2.70) ) {
+	std::cout << "nrPtHats " << nrPtHats << std::endl;
+	den_ele_PU_EE->Fill(nrPtHats);
+	if ( passL1 && (hoe_EE<hoe_cut_EE) &&  (eg_sigma2vv[i]<vv_cut_EE) &&  (eg_sigma2ww[i]<ww_cut_EE) && (eg_hgcaliso_layerclus[i]<hgcaliso_cut_EE) &&
+             (eg_pms2[i]<pms2_cut_EE) && (eg_invEInvP[i]<ooemoop_cut_EE) &&
+             (eg_trkDEtaSeed[i]<deta_cut_EE) && (eg_trkDPhi[i]<dphi_cut_EE) && (eg_nLayerIT[i]>npix_cut_EE) && (eg_normChi2[i]<chi2_cut_EE) &&
+             (eg_hltisov6[i]<trkisohlt_cut_EE) && (eg_l1iso[i]<trkisol1_cut_EE)  ) {
+          num_ele_PU_EE_all->Fill(nrPtHats);
+        }
+      }
+
       if ( (eg_gen_et[i]>10.0) && ((fabs(eg_eta[i]))<1.44) ) {
 	den_ele_genpt_EB->Fill(eg_gen_et[i]);
 	
@@ -372,6 +370,17 @@ void CutOpt::Loop()
 	} 
 	
       } //barrel
+
+      //PU, barrel
+      if ( (eg_gen_et[i]>40.0) && ((fabs(eg_eta[i]))<1.44) ) {
+	den_ele_PU_EB->Fill(nrPtHats);
+	if ( ( eg_ecaliso[i]<ecaliso_cut_EB  ) && (eg_hcalPFIsol_default[i]<hcaliso_cut_EB) &&
+             (eg_pms2[i]<pms2_cut_EB) && (eg_sigmaIEtaIEta[i]<sieie_cut_EB) && (hoe_EB<hoe_cut_EB) && (eg_invEInvP[i]<ooemoop_cut_EB) &&
+             (eg_trkDEtaSeed[i]<deta_cut_EB) && (eg_trkDPhi[i]<dphi_cut_EB) && (eg_nLayerIT[i]>npix_cut_EB) && (eg_normChi2[i]<chi2_cut_EB) && (eg_hltisov6[i]<trkisohlt_cut_EB) &&
+             (eg_l1iso[i]<trkisol1_cut_EB) &&  passL1) {
+          num_ele_PU_EB_all->Fill(nrPtHats);
+        }
+      }
       
       ///////////////////////////////////////////////
       /////// Barrel + Endcap //////////////////////
@@ -519,4 +528,755 @@ void CutOpt::Loop()
   num_ele_geneta_ecaliso->Write();
   num_ele_geneta_hcaliso->Write();
   num_ele_geneta_sieie->Write();
+
+  den_ele_PU_EE->Write();
+  num_ele_PU_EE_all->Write();
+
+  den_ele_PU_EB->Write();
+  num_ele_PU_EB_all->Write();
+
 }
+
+///////////////////////////////////////////////////////////
+/////////////// Single Pho Non Isolated //////////////////
+////////////////////////////////////////////////////////////
+void CutOpt::SinglePhoNonIso()
+{
+  if (fChain == 0) return;
+  
+  TFile* outputFile = new TFile("histSinglePhoNoIso_Sig_Zprime.root","RECREATE");
+
+  const Int_t NBINS_eta = 17;
+  Double_t edges_eta[NBINS_eta + 1] = {-3.0,-2.7,-2.4,-2.0,-1.56,-1.44,-1.0,-0.6,-0.2,0.2,0.6,1.0,1.44,1.56,2.0,2.4,2.7,3.0};
+
+  //  const Int_t NBINS_pt = 6;
+  //  Double_t edges_pt[NBINS_pt + 1] = {200,250,300,400,600,800,1000};
+
+  const Int_t NBINS_pt = 20;
+  Double_t edges_pt[NBINS_pt + 1] = {0,20,40,60,80,100,150,200,300,400,500,600,700,800,900,1000,1200,1400,1600,1800,2000};
+
+  TH1D*  den_ele_geneta = new TH1D("den_ele_geneta", "den_ele_geneta", NBINS_eta, edges_eta); 
+  TH1D*  num_ele_geneta_all = new TH1D("num_ele_geneta_all", "num_ele_geneta_all", NBINS_eta, edges_eta); 
+
+  TH1D*  den_ele_genpt_EE = new TH1D("den_ele_genpt_EE", "den_ele_genpt_EE", NBINS_pt, edges_pt); 
+  TH1D*  num_ele_genpt_all_EE = new TH1D("num_ele_genpt_all_EE", "num_ele_genpt_all_EE", NBINS_pt, edges_pt);
+
+  TH1D*  den_ele_genpt_EB = new TH1D("den_ele_genpt_EB", "den_ele_genpt_EB", NBINS_pt, edges_pt); 
+  TH1D*  num_ele_genpt_all_EB = new TH1D("num_ele_genpt_all_EB", "num_ele_genpt_all_EB", NBINS_pt, edges_pt);
+
+  Long64_t nentries = fChain->GetEntriesFast();
+  
+  Long64_t nbytes = 0, nb = 0;
+  for (Long64_t jentry=0; jentry<nentries;jentry++) {
+    Long64_t ientry = LoadTree(jentry);
+    if (ientry < 0) break;
+    nb = fChain->GetEntry(jentry);   nbytes += nb;
+    // if (Cut(ientry) < 0) continue;
+    for (int i=0; i<nrEgs; i++) {
+
+      //// Barrel cuts                                                                                                                                                                      
+      //float sieie_cut_EB= 0.013;
+      float hoe_EB = (eg_hcalHForHoverE[i])/(eg_energy[i]);
+      float hoe_cut_EB = 0.30;
+      ////end of barrel cuts                                                                                                                                                               
+
+      ////endcap cuts                                                                                                                                                                       
+      float hoe_EE = (eg_hgcalHForHoverE[i])/(eg_energy[i]);
+      float hoe_cut_EE = 0.30;
+      //float vv_cut_EE = 0.9*0.9;
+      //float ww_cut_EE = 9*9;
+      /// end of endcap cuts                                                                                                                                                                
+
+      /// for variables common for barrel and endcap, rename in a generic way that works for both barrel+endcap                                                                             
+      float hoe = 0;
+      float hoe_cut = 9999;
+      if ( fabs(eg_eta[i]) < 1.479 ) {
+	hoe = hoe_EB;
+	hoe_cut = hoe_cut_EB;
+      }
+      else  {
+	hoe = hoe_EE;
+	hoe_cut = hoe_cut_EE;
+      }
+
+      ////define L1 pass/fail                                                                                                                                                               
+      bool passL1 = false;
+      //    if (  fabs(eg_eta[i]) > 2.4 ) {
+      // passL1=true;
+      // }
+      //      if ( (fabs(eg_eta[i])<2.4) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>51.) && (eg_l1pho_passQual[i]) ) {
+      if ( (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>51.) && (eg_l1pho_passQual[i]) ) {
+        passL1=true;
+      }
+
+      ///endcap start    
+      if ( (eg_gen_et[i]>10.0) && ((fabs(eg_eta[i]))>1.56) && ((fabs(eg_eta[i]))<2.70) ) {
+	den_ele_genpt_EE->Fill(eg_gen_et[i]);
+
+	//all cuts                                                                         
+	if ( passL1 &&
+	     (hoe_EE<hoe_cut_EE) 
+	     //(eg_sigma2vv[i]<vv_cut_EE)
+	     ) {
+	  num_ele_genpt_all_EE->Fill(eg_gen_et[i]);
+	}
+      } // endcap end
+
+      //barrel start
+      if ( (eg_gen_et[i]>10.0) && ((fabs(eg_eta[i]))<1.44) ) {
+	den_ele_genpt_EB->Fill(eg_gen_et[i]);
+
+	//all cuts
+	if ( passL1 && 
+	     (hoe_EB<hoe_cut_EB)
+	     //(eg_sigmaIEtaIEta[i]<sieie_cut_EB)
+	     ) {
+	  num_ele_genpt_all_EB->Fill(eg_gen_et[i]);
+	}
+      } //barrel end
+
+      ///////////////////////////////////////////////
+      /////// Barrel + Endcap //////////////////////
+      //////////////////////////////////////////////
+      if ( (eg_gen_et[i]>0.) &&  (eg_et[i]>180.0) ) {
+	den_ele_geneta->Fill(eg_gen_eta[i]);
+
+	//all cuts
+	if ( passL1 && 
+	     (hoe<hoe_cut)  
+	     // (eg_sigma2vv[i]<vv_cut_EE) &&  
+	     //(eg_sigma2ww[i]<ww_cut_EE) && 
+	     // (eg_sigmaIEtaIEta[i]<sieie_cut_EB) 
+	     ) {
+	  num_ele_geneta_all->Fill(eg_gen_eta[i]);
+	}
+      }
+
+
+
+    } // egamma loop
+
+  } //event loop
+
+  den_ele_geneta->Write();
+  num_ele_geneta_all->Write();
+  num_ele_genpt_all_EE->Write();
+  den_ele_genpt_EE->Write();
+  den_ele_genpt_EB->Write();
+  num_ele_genpt_all_EB->Write();
+
+}
+////////
+// Single photon isolated, EB-only
+////////
+void CutOpt::SinglePhoIsoEBonly()
+{
+  if (fChain == 0) return;
+  
+  TFile* outputFile = new TFile("histSinglePhoIsoEBonly_Sig_Zprime.root","RECREATE");
+
+  const Int_t NBINS_eta = 17;
+  Double_t edges_eta[NBINS_eta + 1] = {-3.0,-2.7,-2.4,-2.0,-1.56,-1.44,-1.0,-0.6,-0.2,0.2,0.6,1.0,1.44,1.56,2.0,2.4,2.7,3.0};
+
+  //  const Int_t NBINS_pt = 6;
+  //  Double_t edges_pt[NBINS_pt + 1] = {200,250,300,400,600,800,1000};
+
+  const Int_t NBINS_pt = 26;
+  Double_t edges_pt[NBINS_pt + 1] = {0,20,40,60,80,100,120,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000};
+
+  TH1D*  den_ele_geneta = new TH1D("den_ele_geneta", "den_ele_geneta", NBINS_eta, edges_eta); 
+  TH1D*  num_ele_geneta_all = new TH1D("num_ele_geneta_all", "num_ele_geneta_all", NBINS_eta, edges_eta); 
+
+  TH1D*  den_ele_genpt_EB = new TH1D("den_ele_genpt_EB", "den_ele_genpt_EB", NBINS_pt, edges_pt); 
+  TH1D*  num_ele_genpt_all_EB = new TH1D("num_ele_genpt_all_EB", "num_ele_genpt_all_EB", NBINS_pt, edges_pt);
+
+  Long64_t nentries = fChain->GetEntriesFast();
+  
+  Long64_t nbytes = 0, nb = 0;
+  for (Long64_t jentry=0; jentry<nentries;jentry++) {
+    Long64_t ientry = LoadTree(jentry);
+    if (ientry < 0) break;
+    nb = fChain->GetEntry(jentry);   nbytes += nb;
+    // if (Cut(ientry) < 0) continue;
+    for (int i=0; i<nrEgs; i++) {
+
+      //// Barrel cuts                                                                                                                                                      
+      float sieie_cut_EB= 0.01;
+      float ecaliso_cut_EB= 3.0 + (0.02*eg_et[i]);
+      float hcaliso_cut_EB= 5.3 + (0.02*eg_et[i]);
+      float hoe_EB = (eg_hcalHForHoverE[i])/(eg_energy[i]);
+      float hoe_cut_EB = 0.05;
+      ////end of barrel cuts                                                                                                                                                
+
+      ////define L1 pass/fail                                                                                                                                               
+
+      bool passL1 = false;
+
+      if ( (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>51.) && (eg_l1pho_passQual[i]) ) {
+        passL1=true;
+      }
+
+      if ( (fabs(eg_eta[i])<2.4) && (eg_l1pho_et[i]>0) && (eg_l1pho_etThresIso[i]>36.) && (eg_l1pho_passQual[i]) && (eg_l1pho_passIsol[i]) ) {
+        passL1=true;
+      }
+
+
+      //barrel start
+      if ( (eg_gen_et[i]>10.0) && ((fabs(eg_eta[i]))<1.44) ) {
+	den_ele_genpt_EB->Fill(eg_gen_et[i]);
+
+	//all cuts
+	if ( 
+	    passL1  && 
+	    (hoe_EB<hoe_cut_EB)  &&
+	    (eg_sigmaIEtaIEta[i]<sieie_cut_EB)  &&
+	    (eg_ecaliso[i]<ecaliso_cut_EB ) &&
+	    (eg_hcalPFIsol_default[i]<hcaliso_cut_EB) 
+	     ) {
+	  num_ele_genpt_all_EB->Fill(eg_gen_et[i]);
+	}
+      } //barrel end
+
+      ///////////////////////////////////////////////
+      /////// Barrel, for eta plot /////////////////
+      //////////////////////////////////////////////
+      if ( (eg_gen_et[i]>0.) &&  (eg_et[i]>110.0) ) {
+	den_ele_geneta->Fill(eg_gen_eta[i]);
+
+	//all cuts
+	if ( passL1 && 
+	     ( fabs(eg_eta[i]) <1.479 ) &&
+	     (hoe_EB<hoe_cut_EB) &&
+	     (eg_ecaliso[i]<ecaliso_cut_EB ) &&
+	     (eg_hcalPFIsol_default[i]<hcaliso_cut_EB) &&
+	     (eg_sigmaIEtaIEta[i]<sieie_cut_EB)	
+	     ) {
+	  num_ele_geneta_all->Fill(eg_gen_eta[i]);
+	}
+      }
+
+
+
+    } // egamma loop
+
+  } //event loop
+
+  den_ele_geneta->Write();
+  num_ele_geneta_all->Write();
+  den_ele_genpt_EB->Write();
+  num_ele_genpt_all_EB->Write();
+
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////// DoubleEle HLT
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CutOpt::DoubleEle()
+{
+
+  if (fChain == 0) return;
+  
+  TFile* outputFile  = new TFile("hist_DY_DoubleEle.root","RECREATE");
+
+  const Int_t NBINS_eta = 17;
+  Double_t edges_eta[NBINS_eta + 1] = {-3.0,-2.7,-2.4,-2.0,-1.56,-1.44,-1.0,-0.6,-0.2,0.2,0.6,1.0,1.44,1.56,2.0,2.4,2.7,3.0};
+
+  const Int_t NBINS_pt = 13;
+  Double_t edges_pt[NBINS_pt + 1] = {20,25,30,35,40,45,50,55,60,65,70,80,100,150};
+
+  TH1D*  den_ele_geneta = new TH1D("den_ele_geneta", "den_ele_geneta", NBINS_eta, edges_eta); 
+  TH1D*  num_ele_geneta_all_leg1 = new TH1D("num_ele_geneta_all_leg1", "num_ele_geneta_all_leg1", NBINS_eta, edges_eta); 
+  TH1D*  num_ele_geneta_all_leg2 = new TH1D("num_ele_geneta_all_leg2", "num_ele_geneta_all_leg2", NBINS_eta, edges_eta); 
+
+  TH1D*  den_ele_genpt_EB = new TH1D("den_ele_genpt_EB", "den_ele_genpt_EB", NBINS_pt, edges_pt);
+  TH1D*  den_ele_genpt_EE = new TH1D("den_ele_genpt_EE", "den_ele_genpt_EE", NBINS_pt, edges_pt);
+
+  TH1D*  num_ele_genpt_EB_leg1 = new TH1D("num_ele_genpt_EB_leg1", "num_ele_genpt_EB_leg1", NBINS_pt, edges_pt);
+  TH1D*  num_ele_genpt_EB_leg2 = new TH1D("num_ele_genpt_EB_leg2", "num_ele_genpt_EB_leg2", NBINS_pt, edges_pt);
+
+  TH1D*  num_ele_genpt_EB_sieie = new TH1D("num_ele_genpt_EB_sieie", "num_ele_genpt_EB_sieie", NBINS_pt, edges_pt);
+
+  TH1D*  num_ele_genpt_EB_L1_leg1 = new TH1D("num_ele_genpt_EB_L1_leg1", "num_ele_genpt_EB_L1_leg1", NBINS_pt, edges_pt);
+  TH1D*  num_ele_genpt_EB_L1_leg2 = new TH1D("num_ele_genpt_EB_L1_leg2", "num_ele_genpt_EB_L1_leg2", NBINS_pt, edges_pt);
+
+  TH1D*  num_ele_genpt_EE_L1_leg1 = new TH1D("num_ele_genpt_EE_L1_leg1", "num_ele_genpt_EE_L1_leg1", NBINS_pt, edges_pt);
+  TH1D*  num_ele_genpt_EE_L1_leg2 = new TH1D("num_ele_genpt_EE_L1_leg2", "num_ele_genpt_EE_L1_leg2", NBINS_pt, edges_pt);
+
+  TH1D*  num_ele_genpt_EE_leg1 = new TH1D("num_ele_genpt_EE_leg1", "num_ele_genpt_EE_leg1", NBINS_pt, edges_pt);
+  TH1D*  num_ele_genpt_EE_leg2 = new TH1D("num_ele_genpt_EE_leg2", "num_ele_genpt_EE_leg2", NBINS_pt, edges_pt);
+
+  Long64_t nentries = fChain->GetEntriesFast();
+  
+  Long64_t nbytes = 0, nb = 0;
+  for (Long64_t jentry=0; jentry<nentries;jentry++) {
+    Long64_t ientry = LoadTree(jentry);
+    if (ientry < 0) break;
+    nb = fChain->GetEntry(jentry);   nbytes += nb;
+    // if (Cut(ientry) < 0) continue;
+    for (int i=0; i<nrEgs; i++) {
+
+      //// Barrel cuts // DoubleEle HLT
+      float pms2_cut_EB= 55.0; 
+      float sieie_cut_EB= 0.013; //0.013; 
+      float hoe_EB = (eg_hcalHForHoverE[i])/(eg_energy[i]);
+      float hoe_cut_EB = 0.19; 
+      ////end of barrel cuts
+      
+      ////endcap cuts // DoubleEle HLT  
+      float hoe_EE = (eg_hgcalHForHoverE[i])/(eg_energy[i]);
+      float hoe_cut_EE = 0.19; //0.15 + (5.0/(eg_energy[i]));
+      float vv_cut_EE = 0.8*0.8; 
+      float pms2_cut_EE= 75.0;
+      /// end of endcap cuts
+
+      /// for variables common for barrel and endcap, rename in a generic way that works for both barrel+endcap
+      float pms2_cut = 9999;
+      float hoe = 0;
+      float hoe_cut = 9999;
+
+      if ( fabs(eg_eta[i]) < 1.479 ) {
+        pms2_cut = pms2_cut_EB;
+        hoe = hoe_EB;
+        hoe_cut = hoe_cut_EB;
+      }
+      
+      else  {
+        pms2_cut = pms2_cut_EE;
+        hoe = hoe_EE;
+        hoe_cut = hoe_cut_EE;
+      }
+      
+      ///
+      //// Using Double TkElectron 25, 12 & Double StaEG 37,24
+      ///
+      ////define L1 pass/fail, high pT leg
+      bool passL1_highpt = false;
+      if (  fabs(eg_eta[i]) > 2.4 ) {
+	passL1_highpt=true;
+      }
+      if ( (fabs(eg_eta[i])<2.4) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>37.) && (eg_l1pho_passQual[i]) ) {
+	passL1_highpt=true;
+      }
+      if ( (fabs(eg_eta[i])<2.4) && (eg_l1ele_et[i]>0) && (eg_l1ele_etThresNonIso[i]>25.) && (eg_l1ele_passQual[i]) ) {
+	passL1_highpt=true;
+      }
+      /////////
+
+      ////define L1 pass/fail, low pT leg
+      bool passL1_lowpt = false;
+      if (  fabs(eg_eta[i]) > 2.4 ) {
+	passL1_lowpt=true;
+      }
+      if ( (fabs(eg_eta[i])<2.4) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>24.) && (eg_l1pho_passQual[i]) ) {
+	passL1_lowpt=true;
+      }
+      if ( (fabs(eg_eta[i])<2.4) && (eg_l1ele_et[i]>0) && (eg_l1ele_etThresNonIso[i]>12.) && (eg_l1ele_passQual[i]) ) {
+	passL1_lowpt=true;
+      }
+
+      ///endcap start    
+      if ( (eg_gen_et[i]>10.0) && ((fabs(eg_eta[i]))>1.56) && ((fabs(eg_eta[i]))<2.70) ) {
+	den_ele_genpt_EE->Fill(eg_gen_et[i]);
+
+	if (passL1_highpt) {
+	  num_ele_genpt_EE_L1_leg1->Fill(eg_gen_et[i]);
+	}
+	if (passL1_lowpt) {
+	  num_ele_genpt_EE_L1_leg2->Fill(eg_gen_et[i]);
+	}
+
+	if (
+            (passL1_highpt) &&
+            (hoe<hoe_cut) &&
+            (eg_sigma2vv[i]<vv_cut_EE) &&
+            (eg_pms2[i]<pms2_cut) 
+	    ) {
+          num_ele_genpt_EE_leg1->Fill(eg_gen_et[i]);
+        }
+
+	if (
+            (passL1_lowpt) &&
+            (hoe<hoe_cut) &&
+            (eg_sigma2vv[i]<vv_cut_EE) &&
+            (eg_pms2[i]<pms2_cut) 
+	    ) {
+          num_ele_genpt_EE_leg2->Fill(eg_gen_et[i]);
+        }
+      } //endcap end
+
+      //barrel start
+      if ( (eg_gen_et[i]>10.0) && ((fabs(eg_eta[i]))<1.44) ) {
+	den_ele_genpt_EB->Fill(eg_gen_et[i]);
+
+	if ( eg_sigmaIEtaIEta[i]<sieie_cut_EB ) {
+	  num_ele_genpt_EB_sieie->Fill(eg_gen_et[i]);
+	}
+
+	if (passL1_highpt) {
+	  num_ele_genpt_EB_L1_leg1->Fill(eg_gen_et[i]);
+	}
+
+	if (passL1_lowpt) {
+	  num_ele_genpt_EB_L1_leg2->Fill(eg_gen_et[i]);
+	}
+      
+	if (
+            (passL1_highpt) &&
+            (hoe<hoe_cut) &&
+            (eg_pms2[i]<pms2_cut) &&
+            (eg_sigmaIEtaIEta[i]<sieie_cut_EB)
+	    ) {
+          num_ele_genpt_EB_leg1->Fill(eg_gen_et[i]);
+        }
+
+	if (
+            (passL1_lowpt) &&
+            (hoe<hoe_cut) &&
+            (eg_pms2[i]<pms2_cut) &&
+            (eg_sigmaIEtaIEta[i]<sieie_cut_EB)
+	    ) {
+          num_ele_genpt_EB_leg2->Fill(eg_gen_et[i]);
+        }
+      }
+
+      ///////////////////////////////////////////////
+      /////// Barrel + Endcap //////////////////////
+      //////////////////////////////////////////////
+      if ( (eg_gen_et[i]>0.) &&  (eg_et[i]>35.0) ) {
+	den_ele_geneta->Fill(eg_gen_eta[i]);
+	//
+	//all cuts leg1
+	if ( 
+	    (passL1_highpt) && 
+	    (hoe<hoe_cut) &&  
+	    (eg_sigma2vv[i]<vv_cut_EE) &&  
+	    (eg_pms2[i]<pms2_cut) && 
+	    (eg_sigmaIEtaIEta[i]<sieie_cut_EB) 
+	       
+	     ) {
+	  num_ele_geneta_all_leg1->Fill(eg_gen_eta[i]);
+	}
+
+	if (
+            (passL1_lowpt) &&
+            (hoe<hoe_cut) &&
+            (eg_sigma2vv[i]<vv_cut_EE) &&
+            (eg_pms2[i]<pms2_cut) &&
+            (eg_sigmaIEtaIEta[i]<sieie_cut_EB)
+	    
+	    ) {
+          num_ele_geneta_all_leg2->Fill(eg_gen_eta[i]);
+        }
+	
+      }//
+    }//ele loop
+    
+  } //event loop
+
+  den_ele_geneta->Write();
+  num_ele_geneta_all_leg1->Write();
+  num_ele_geneta_all_leg2->Write();
+
+  den_ele_genpt_EB->Write();
+  den_ele_genpt_EE->Write();
+
+  num_ele_genpt_EB_leg1->Write();
+  num_ele_genpt_EE_leg1->Write();
+
+  num_ele_genpt_EB_leg2->Write();
+  num_ele_genpt_EE_leg2->Write();
+
+  num_ele_genpt_EB_sieie->Write();
+
+  num_ele_genpt_EB_L1_leg1->Write();
+  num_ele_genpt_EB_L1_leg2->Write();
+
+  num_ele_genpt_EE_L1_leg1->Write();
+  num_ele_genpt_EE_L1_leg2->Write();
+}
+
+/////// double photon HLT /////////
+
+void CutOpt::DoublePhoton()
+{
+
+  if (fChain == 0) return;
+  
+  TFile* outputFile  = new TFile("hist_DY_DoublePho.root","RECREATE");
+
+  const Int_t NBINS_eta = 17;
+  Double_t edges_eta[NBINS_eta + 1] = {-3.0,-2.7,-2.4,-2.0,-1.56,-1.44,-1.0,-0.6,-0.2,0.2,0.6,1.0,1.44,1.56,2.0,2.4,2.7,3.0};
+
+  const Int_t NBINS_pt = 13;
+  Double_t edges_pt[NBINS_pt + 1] = {20,25,30,35,40,45,50,55,60,65,70,80,100,150};
+
+  const Int_t NBINS_pu = 8;
+  Double_t edges_pu[NBINS_pu + 1] = {150,170,180,190,200,210,220,230,250};
+
+  TH1D*  den_ele_PU_EB = new TH1D("den_ele_PU_EB", "den_ele_PU_EB", NBINS_pu, edges_pu); 
+  TH1D*  den_ele_PU_EE = new TH1D("den_ele_PU_EE", "den_ele_PU_EE", NBINS_pu, edges_pu); 
+
+  TH1D*  num_ele_PU_EB_leg1_all = new TH1D("num_ele_PU_EB_leg1_all", "num_ele_PU_EB_leg1_all", NBINS_pu, edges_pu); 
+  TH1D*  num_ele_PU_EE_leg1_all = new TH1D("num_ele_PU_EE_leg1_all", "num_ele_PU_EE_leg1_all", NBINS_pu, edges_pu); 
+
+  TH1D*  num_ele_PU_EB_leg2_all = new TH1D("num_ele_PU_EB_leg2_all", "num_ele_PU_EB_leg2_all", NBINS_pu, edges_pu); 
+  TH1D*  num_ele_PU_EE_leg2_all = new TH1D("num_ele_PU_EE_leg2_all", "num_ele_PU_EE_leg2_all", NBINS_pu, edges_pu); 
+
+  TH1D*  den_ele_geneta = new TH1D("den_ele_geneta", "den_ele_geneta", NBINS_eta, edges_eta); 
+  TH1D*  num_ele_geneta_all_leg1 = new TH1D("num_ele_geneta_all_leg1", "num_ele_geneta_all_leg1", NBINS_eta, edges_eta); 
+  TH1D*  num_ele_geneta_all_leg2 = new TH1D("num_ele_geneta_all_leg2", "num_ele_geneta_all_leg2", NBINS_eta, edges_eta); 
+
+  TH1D*  den_ele_genpt_EB = new TH1D("den_ele_genpt_EB", "den_ele_genpt_EB", NBINS_pt, edges_pt);
+  TH1D*  den_ele_genpt_EE = new TH1D("den_ele_genpt_EE", "den_ele_genpt_EE", NBINS_pt, edges_pt);
+
+  TH1D*  num_ele_genpt_EB_leg1_all = new TH1D("num_ele_genpt_EB_leg1_all", "num_ele_genpt_EB_leg1_all", NBINS_pt, edges_pt);
+  TH1D*  num_ele_genpt_EB_leg2_all = new TH1D("num_ele_genpt_EB_leg2_all", "num_ele_genpt_EB_leg2_all", NBINS_pt, edges_pt);
+
+  TH1D*  num_ele_genpt_EE_leg1_all = new TH1D("num_ele_genpt_EE_leg1_all", "num_ele_genpt_EE_leg1_all", NBINS_pt, edges_pt);
+  TH1D*  num_ele_genpt_EE_leg2_all = new TH1D("num_ele_genpt_EE_leg2_all", "num_ele_genpt_EE_leg2_all", NBINS_pt, edges_pt);
+
+  Long64_t nentries = fChain->GetEntriesFast();
+  
+  Long64_t nbytes = 0, nb = 0;
+  for (Long64_t jentry=0; jentry<nentries;jentry++) {
+    Long64_t ientry = LoadTree(jentry);
+    if (ientry < 0) break;
+    nb = fChain->GetEntry(jentry);   nbytes += nb;
+    // if (Cut(ientry) < 0) continue;
+    for (int i=0; i<nrEgs; i++) {
+
+      //// Barrel cuts // DoublePhoton HLT
+      float sieie_cut_EB= 0.0113;
+      float hoe_EB = (eg_hcalHForHoverE[i])/(eg_energy[i]);
+      float hoe_cut_EB = 0.18;
+      float ecaliso_cut_EB= 8.5;
+      float hcaliso_cut_EB=11;  //9.5;
+      if ( ( fabs(eg_eta[i]) > 0.8 ) && ( fabs(eg_eta[i]) < 1.479 )  ) {
+      	hcaliso_cut_EB = 12;
+      }
+      ////end of barrel cuts
+      
+      ////endcap cuts // DoublePhoton HLT  
+      float hoe_EE = (eg_hgcalHForHoverE[i])/(eg_energy[i]);
+      float hoe_cut_EE = 0.125; //0.15 + (5.0/(eg_energy[i]));
+      float vv_cut_EE = 0.8*0.8; //0.76*0.76;
+      float ww_cut_EE = 8*8;
+      float hgcaliso_cut_EE = 140; // 130.0;
+      if ( ( fabs(eg_eta[i]) > 2.0 ) ) {
+	hgcaliso_cut_EE = 370; //340.0;
+      }
+      /// end of endcap cuts
+
+      /// for variables common for barrel and endcap, rename in a generic way that works for both barrel+endcap
+      float hoe = 0;
+      float hoe_cut = 9999;
+
+      if ( fabs(eg_eta[i]) < 1.479 ) {
+        hoe = hoe_EB;
+        hoe_cut = hoe_cut_EB;
+      }
+      else  {
+        hoe = hoe_EE;
+        hoe_cut = hoe_cut_EE;
+      }
+      
+      ///
+      //// Double StaEG 37,24 
+      //// Double TkIsoPhoton 22, 12 
+      ///
+      ////define L1 pass/fail, high pT leg
+      bool passL1_highpt = false;
+      if (  fabs(eg_eta[i]) > 2.4 ) {
+	passL1_highpt=true;
+      }
+      if ( (fabs(eg_eta[i])<2.4) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>37.) && (eg_l1pho_passQual[i]) ) {
+	passL1_highpt=true;
+      }
+      if ( (fabs(eg_eta[i])<2.4) && (eg_l1pho_et[i]>0) && (eg_l1pho_etThresIso[i]>22.) && (eg_l1pho_passQual[i]) && (eg_l1pho_passIsol[i]) ) {
+	passL1_highpt=true;
+      }
+      /////////                                                                                                                                                                                               
+      ////define L1 pass/fail, low pT leg                                                                                                                                                                     
+      bool passL1_lowpt = false;
+      if (  fabs(eg_eta[i]) > 2.4 ) {
+	passL1_lowpt=true;
+      }
+      if ( (fabs(eg_eta[i])<2.4) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>24.) && (eg_l1pho_passQual[i]) ) {
+	passL1_lowpt=true;
+      }
+      if ( (fabs(eg_eta[i])<2.4) && (eg_l1pho_et[i]>0) && (eg_l1pho_etThresIso[i]>12.) && (eg_l1pho_passQual[i]) && (eg_l1pho_passIsol[i]) ) {
+	passL1_lowpt=true;
+      }
+
+      ///endcap start    
+      if ( (eg_gen_et[i]>10.0) && ((fabs(eg_eta[i]))>1.56) && ((fabs(eg_eta[i]))<2.70) ) {
+	den_ele_genpt_EE->Fill(eg_gen_et[i]);
+
+	if (
+            (passL1_highpt) &&
+            (hoe<hoe_cut) &&
+            (eg_sigma2vv[i]<vv_cut_EE) &&
+	    (eg_sigma2ww[i]<ww_cut_EE) &&  
+	    (eg_hgcaliso_layerclus[i]<hgcaliso_cut_EE) 
+	    ) {
+          num_ele_genpt_EE_leg1_all->Fill(eg_gen_et[i]);
+        }
+
+	if (
+            (passL1_lowpt) &&
+            (hoe<hoe_cut) &&
+            (eg_sigma2vv[i]<vv_cut_EE) &&
+	    (eg_sigma2ww[i]<ww_cut_EE)  &&
+	    (eg_hgcaliso_layerclus[i]<hgcaliso_cut_EE) 
+	    ) {
+          num_ele_genpt_EE_leg2_all->Fill(eg_gen_et[i]);
+        }
+      } //endcap end
+
+      //////PU
+      ///endcap start    
+      if ( (eg_gen_et[i]>40.0) && ((fabs(eg_eta[i]))>1.56) && ((fabs(eg_eta[i]))<2.70) ) {
+	den_ele_PU_EE->Fill(nrPtHats);
+
+	if (
+            (passL1_highpt) &&
+            (hoe<hoe_cut) &&
+            (eg_sigma2vv[i]<vv_cut_EE) &&
+	    (eg_sigma2ww[i]<ww_cut_EE) &&  
+	    (eg_hgcaliso_layerclus[i]<hgcaliso_cut_EE) 
+	    ) {
+          num_ele_PU_EE_leg1_all->Fill(nrPtHats);
+        }
+
+	if (
+            (passL1_lowpt) &&
+            (hoe<hoe_cut) &&
+            (eg_sigma2vv[i]<vv_cut_EE) &&
+	    (eg_sigma2ww[i]<ww_cut_EE)  &&
+	    (eg_hgcaliso_layerclus[i]<hgcaliso_cut_EE) 
+	    ) {
+          num_ele_PU_EE_leg2_all->Fill(nrPtHats);
+        }
+      } //endcap end
+
+      //barrel start
+      if ( (eg_gen_et[i]>10.0) && ((fabs(eg_eta[i]))<1.44) ) {
+	den_ele_genpt_EB->Fill(eg_gen_et[i]);
+
+	if (
+            (passL1_highpt) &&
+            (hoe<hoe_cut) &&
+            (eg_sigmaIEtaIEta[i]<sieie_cut_EB) &&
+	    (eg_ecaliso[i]<ecaliso_cut_EB ) &&
+            (eg_hcalPFIsol_default[i]<hcaliso_cut_EB) 
+	    ) {
+          num_ele_genpt_EB_leg1_all->Fill(eg_gen_et[i]);
+        }
+
+	if (
+            (passL1_lowpt) &&
+            (hoe<hoe_cut) &&
+	    (eg_sigmaIEtaIEta[i]<sieie_cut_EB) &&
+	    (eg_ecaliso[i]<ecaliso_cut_EB ) &&
+            (eg_hcalPFIsol_default[i]<hcaliso_cut_EB) 
+	    ) {
+          num_ele_genpt_EB_leg2_all->Fill(eg_gen_et[i]);
+        }
+      }
+
+      ////PU
+      //barrel start
+      if ( (eg_gen_et[i]>40.0) && ((fabs(eg_eta[i]))<1.44) ) {
+	den_ele_PU_EB->Fill(nrPtHats);
+
+	if (
+            (passL1_highpt) &&
+            (hoe<hoe_cut) &&
+            (eg_sigmaIEtaIEta[i]<sieie_cut_EB) &&
+	    (eg_ecaliso[i]<ecaliso_cut_EB ) &&
+            (eg_hcalPFIsol_default[i]<hcaliso_cut_EB) 
+	    ) {
+          num_ele_PU_EB_leg1_all->Fill(nrPtHats);
+        }
+
+	if (
+            (passL1_lowpt) &&
+            (hoe<hoe_cut) &&
+	    (eg_sigmaIEtaIEta[i]<sieie_cut_EB) &&
+	    (eg_ecaliso[i]<ecaliso_cut_EB ) &&
+            (eg_hcalPFIsol_default[i]<hcaliso_cut_EB) 
+	    ) {
+          num_ele_PU_EB_leg2_all->Fill(nrPtHats);
+        }
+      }
+
+
+      ///////////////////////////////////////////////
+      /////// Barrel + Endcap //////////////////////
+      //////////////////////////////////////////////
+      if ( (eg_gen_et[i]>0.) && (eg_et[i]>40.0) ) {
+	den_ele_geneta->Fill(eg_gen_eta[i]);
+	//
+	//all cuts leg1
+	if ( 
+	    (passL1_highpt) &&
+	    // (eg_et[i]>40.0) &&
+	    (hoe<hoe_cut) &&  
+	    (eg_sigma2vv[i]<vv_cut_EE) &&  
+	    (eg_sigma2ww[i]<ww_cut_EE) &&
+            (eg_hgcaliso_layerclus[i]<hgcaliso_cut_EE) &&
+            (eg_ecaliso[i]<ecaliso_cut_EB ) &&
+            (eg_hcalPFIsol_default[i]<hcaliso_cut_EB) &&
+	    (eg_sigmaIEtaIEta[i]<sieie_cut_EB) 
+	       
+	     ) {
+	  num_ele_geneta_all_leg1->Fill(eg_gen_eta[i]);
+	}
+
+	if (
+            (passL1_lowpt) &&
+	    // (eg_et[i]>40) &&
+            (hoe<hoe_cut) &&
+            (eg_sigma2vv[i]<vv_cut_EE) &&
+	    (eg_sigma2ww[i]<ww_cut_EE) &&
+            (eg_hgcaliso_layerclus[i]<hgcaliso_cut_EE) &&
+            (eg_ecaliso[i]<ecaliso_cut_EB ) &&
+            (eg_hcalPFIsol_default[i]<hcaliso_cut_EB) &&
+            (eg_sigmaIEtaIEta[i]<sieie_cut_EB)
+	    
+	    ) {
+          num_ele_geneta_all_leg2->Fill(eg_gen_eta[i]);
+        }
+	
+      }//
+    }//ele loop
+    
+  } //event loop
+
+  den_ele_geneta->Write();
+  num_ele_geneta_all_leg1->Write();
+  num_ele_geneta_all_leg2->Write();
+
+  den_ele_genpt_EB->Write();
+  den_ele_genpt_EE->Write();
+
+  num_ele_genpt_EB_leg1_all->Write();
+  num_ele_genpt_EE_leg1_all->Write();
+
+  num_ele_genpt_EB_leg2_all->Write();
+  num_ele_genpt_EE_leg2_all->Write();
+
+  den_ele_PU_EB->Write();
+  den_ele_PU_EE->Write();
+
+  num_ele_PU_EB_leg1_all->Write();
+  num_ele_PU_EE_leg1_all->Write();
+
+  num_ele_PU_EB_leg2_all->Write();
+  num_ele_PU_EE_leg2_all->Write();
+
+}
+
+
