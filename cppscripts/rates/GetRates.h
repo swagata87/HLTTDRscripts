@@ -1,5 +1,4 @@
 /////////////////
-//file:   /eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/hadd_Sam_Ntuple/all.root
 //////////////////////////////////////////////////////////
 
 #ifndef GetRates_h
@@ -23,6 +22,8 @@ public :
    UInt_t          runnr;
    UInt_t          lumiSec;
    UInt_t          eventnr;
+   Float_t         weight;
+   Float_t         filtweight;
    Float_t         weightV1;
    Float_t         weightV2;
    Float_t         weightV2NoEM;
@@ -121,6 +122,8 @@ public :
    TBranch        *b_runnr;   //!
    TBranch        *b_lumiSec;   //!
    TBranch        *b_eventnr;   //!
+   TBranch        *b_weight;   //!
+   TBranch        *b_filtweight;   //!
    TBranch        *b_weightV1;   //!
    TBranch        *b_weightV2;   //!
    TBranch        *b_weightV2NoEM;   //!
@@ -238,12 +241,12 @@ GetRates::GetRates(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/hadd_Sam_Ntuple/all.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/regression_Jan_hadd_Sam_Ntuple/all.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("/eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/hadd_Sam_Ntuple/all.root");
+         f = new TFile("/eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/regression_Jan_hadd_Sam_Ntuple/all.root");
       }
       f->GetObject("egHLTTree",tree);
-      std::cout << "/eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/hadd_Sam_Ntuple/all.root" << std::endl;
+      std::cout << "/eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/regression_Jan_hadd_Sam_Ntuple/all.root" << std::endl;
 
    }
    Init(tree);
@@ -293,6 +296,8 @@ void GetRates::Init(TTree *tree)
    fChain->SetBranchAddress("runnr", &runnr, &b_runnr);
    fChain->SetBranchAddress("lumiSec", &lumiSec, &b_lumiSec);
    fChain->SetBranchAddress("eventnr", &eventnr, &b_eventnr);
+   fChain->SetBranchAddress("filtweight", &filtweight, &b_filtweight);
+   fChain->SetBranchAddress("weight", &weight, &b_weight);
    fChain->SetBranchAddress("weightV1", &weightV1, &b_weightV1);
    fChain->SetBranchAddress("weightV2", &weightV2, &b_weightV2);
    fChain->SetBranchAddress("weightV2NoEM", &weightV2NoEM, &b_weightV2NoEM);

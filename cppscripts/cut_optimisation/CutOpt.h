@@ -2,7 +2,6 @@
 // This class has been automatically generated on
 // Thu Nov 26 15:26:55 2020 by ROOT version 6.20/07
 // from TTree egHLTTree/
-// found on file: /eos/cms/store/group/phys_egamma/swmukher/L1HighPtEffLoss/PU200_FixBySam/ZPrimeEE_fixedL1EG.root
 //////////////////////////////////////////////////////////
 
 #ifndef CutOpt_h
@@ -222,7 +221,7 @@ public :
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
-   virtual void     SingleEle();
+   virtual void     SingleEle(bool wp);
    virtual void     DoubleEle();
    virtual void     DoublePhoton();
    virtual void     SinglePhoNonIso();
@@ -239,12 +238,12 @@ CutOpt::CutOpt(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/eos/cms/store/group/phys_egamma/swmukher/L1HighPtEffLoss/PU200_FixBySam/ZPrimeEE_fixedL1EG.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/eos/cms/store/group/dpg_trigger/comm_trigger/TriggerStudiesGroup/Upgrade/EGM_PhaseII/mc/11_1_6/ntupv2/ZprimeToEE_M-6000_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_Jan16th.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("/eos/cms/store/group/phys_egamma/swmukher/L1HighPtEffLoss/PU200_FixBySam/ZPrimeEE_fixedL1EG.root");
+         f = new TFile("/eos/cms/store/group/dpg_trigger/comm_trigger/TriggerStudiesGroup/Upgrade/EGM_PhaseII/mc/11_1_6/ntupv2/ZprimeToEE_M-6000_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_Jan16th.root");
       }
       f->GetObject("egHLTTree",tree);
-      std::cout << "/eos/cms/store/group/phys_egamma/swmukher/L1HighPtEffLoss/PU200_FixBySam/ZPrimeEE_fixedL1EG.root" << std::endl;
+      std::cout << "/eos/cms/store/group/dpg_trigger/comm_trigger/TriggerStudiesGroup/Upgrade/EGM_PhaseII/mc/11_1_6/ntupv2/ZprimeToEE_M-6000_TuneCP5_14TeV-pythia8__Phase2HLTTDRSummer20ReRECOMiniAOD-PU200_Jan16th.root" << std::endl;
    }
    Init(tree);
 }

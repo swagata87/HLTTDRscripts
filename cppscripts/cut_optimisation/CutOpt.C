@@ -5,29 +5,30 @@
 #include <TCanvas.h>
 #include <iostream>
 
-void CutOpt::SingleEle()
+void CutOpt::SingleEle(bool run_tight_wp=1)
 {
   if (fChain == 0) return;
   
   TFile* outputFile; // = new TFile("hist_DY_WP70.root","RECREATE");
 
-  bool WP_tight = 1;
+  bool WP_tight = run_tight_wp;
   std::cout << "WP_tight " << WP_tight << std::endl;
   if (WP_tight) {
     std::cout << "running WP tight, 70% eff" << std::endl;
-    outputFile = new TFile("hist_DY_WP70.root","RECREATE");
+    outputFile = new TFile("hist_Zprime_WP70.root","RECREATE");
 
   }
   else {
     std::cout << "running WP loose, 80% eff" << std::endl;
-    outputFile = new TFile("hist_DY_WP80.root","RECREATE");
+    outputFile = new TFile("hist_Zprime_WP80.root","RECREATE");
   }
 
   const Int_t NBINS_eta = 17;
   Double_t edges_eta[NBINS_eta + 1] = {-3.0,-2.7,-2.4,-2.0,-1.56,-1.44,-1.0,-0.6,-0.2,0.2,0.6,1.0,1.44,1.56,2.0,2.4,2.7,3.0};
 
-  const Int_t NBINS_pt = 14;
-  Double_t edges_pt[NBINS_pt + 1] = {20,24,28,32,36,40,44,48,52,56,60,65,70,80,150};
+  const Int_t NBINS_pt = 16;
+  //  Double_t edges_pt[NBINS_pt + 1] = {20,24,28,32,36,40,44,48,52,56,60,65,70,80,150};
+  Double_t edges_pt[NBINS_pt + 1] = {20,30,40,50,60,70,80,90,100,150,200,250,300,350,400,450,500};
 
   const Int_t NBINS_pu = 8;
   Double_t edges_pu[NBINS_pu + 1] = {150,170,180,190,200,210,220,230,250};
@@ -119,13 +120,13 @@ void CutOpt::SingleEle()
     for (int i=0; i<nrEgs; i++) {
 
       //// Barrel cuts
-      float ecaliso_cut_EB= (WP_tight==1) ? 4.8 : 7.5; 
-      float hcaliso_cut_EB= (WP_tight==1) ? 9.5 : 13.0; 
-      if ( ( fabs(eg_eta[i]) > 0.8 ) && ( fabs(eg_eta[i]) < 1.479 )  ) {
-	hcaliso_cut_EB = (WP_tight==1) ? 15.0 : 18.0; 
-      }
+      float ecaliso_cut_EB= (WP_tight==1) ? 4.4 + (0.02*eg_et[i]) : 9.0 + (0.02*eg_et[i]); 
+      float hcaliso_cut_EB= (WP_tight==1) ? 12+(0.02*eg_et[i]) : 19+(0.02*eg_et[i]); 
+      //      if ( ( fabs(eg_eta[i]) > 0.8 ) && ( fabs(eg_eta[i]) < 1.479 )  ) {
+      //hcaliso_cut_EB = (WP_tight==1) ? 15.0 + (0.02*eg_et[i]) : 18.0 + (0.02*eg_et[i]); 
+      //}
       float pms2_cut_EB= (WP_tight==1) ? 42.0 : 55.0; 
-      float sieie_cut_EB= (WP_tight==1) ? 0.0115 : 0.0129; 
+      float sieie_cut_EB= (WP_tight==1) ? 0.012 : 0.013; 
       float hoe_EB = (eg_hcalHForHoverE[i])/(eg_energy[i]);
       float hoe_cut_EB = (WP_tight==1) ? 0.17 : 0.175; 
       float ooemoop_cut_EB = (WP_tight==1) ? 0.035 : 0.04;
@@ -152,11 +153,11 @@ void CutOpt::SingleEle()
       ////endcap cuts
       float hoe_EE = (eg_hgcalHForHoverE[i])/(eg_energy[i]);
       float hoe_cut_EE = (WP_tight==1) ? 0.15 + (5.0/(eg_energy[i])) : 0.15 + (5.0/(eg_energy[i]));
-      float vv_cut_EE = (WP_tight==1) ? 0.8*0.8 : 0.85*0.85; 
-      float ww_cut_EE = (WP_tight==1) ? 8*8 : 8.5*8.5; 
-      float hgcaliso_cut_EE = (WP_tight==1) ? 130.0 : 150.0;
+      float vv_cut_EE = (WP_tight==1) ? (0.8*0.8)+(0.0008*eg_et[i]) : (0.85*0.85)+(0.0008*eg_et[i]); 
+      float ww_cut_EE = (WP_tight==1) ? (8*8)+(0.04*eg_et[i]) : (8.5*8.5)+(0.04*eg_et[i]); 
+      float hgcaliso_cut_EE = (WP_tight==1) ? 130.0 + (0.05*eg_energy[i]) : 150.0 + (0.05*eg_energy[i]);
       if ( ( fabs(eg_eta[i]) > 2.0 ) ) {
-	hgcaliso_cut_EE = (WP_tight==1) ? 340.0 : 350.0;
+	hgcaliso_cut_EE = (WP_tight==1) ? 340.0+ (0.05*eg_energy[i]) : 350.0+ (0.05*eg_energy[i]);
       }
       float pms2_cut_EE= (WP_tight==1) ? 65.0 : 75.0;
       float ooemoop_cut_EE = (WP_tight==1) ? 0.01 : 0.04;
@@ -207,10 +208,10 @@ void CutOpt::SingleEle()
       }
       
       bool passL1 = false;
-      if (  fabs(eg_eta[i]) > 2.4 ) {
+      if (  fabs(eg_eta[i]) > 2.8 ) {
 	passL1=true;
       }
-      if ( (fabs(eg_eta[i])<2.4) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>51.) && (eg_l1pho_passQual[i]) ) {
+      if ( (fabs(eg_eta[i])<2.8) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>51.) && (eg_l1pho_passQual[i]) ) {
 	passL1=true;
       }
       if ( (fabs(eg_eta[i])<2.4) && (eg_l1ele_et[i]>0) && (eg_l1ele_etThresNonIso[i]>36.) && (eg_l1ele_passQual[i]) ) {
@@ -291,7 +292,7 @@ void CutOpt::SingleEle()
     
       //PU , endcap
       if ( (eg_gen_et[i]>40.0) && ((fabs(eg_eta[i]))>1.56) && ((fabs(eg_eta[i]))<2.70) ) {
-	std::cout << "nrPtHats " << nrPtHats << std::endl;
+	//std::cout << "nrPtHats " << nrPtHats << std::endl;
 	den_ele_PU_EE->Fill(nrPtHats);
 	if ( passL1 && (hoe_EE<hoe_cut_EE) &&  (eg_sigma2vv[i]<vv_cut_EE) &&  (eg_sigma2ww[i]<ww_cut_EE) && (eg_hgcaliso_layerclus[i]<hgcaliso_cut_EE) &&
              (eg_pms2[i]<pms2_cut_EE) && (eg_invEInvP[i]<ooemoop_cut_EE) &&
@@ -385,7 +386,7 @@ void CutOpt::SingleEle()
       ///////////////////////////////////////////////
       /////// Barrel + Endcap //////////////////////
       //////////////////////////////////////////////
-      if ( (eg_gen_et[i]>0.) &&  (eg_et[i]>40.0) ) {
+      if ( (eg_gen_et[i]>40.) &&  (eg_gen_et[i]<500.0) ) {
 	den_ele_geneta->Fill(eg_gen_eta[i]);
 	//
 	if (eg_nGsf[i]>0) {
@@ -552,8 +553,9 @@ void CutOpt::SinglePhoNonIso()
   //  const Int_t NBINS_pt = 6;
   //  Double_t edges_pt[NBINS_pt + 1] = {200,250,300,400,600,800,1000};
 
-  const Int_t NBINS_pt = 20;
-  Double_t edges_pt[NBINS_pt + 1] = {0,20,40,60,80,100,150,200,300,400,500,600,700,800,900,1000,1200,1400,1600,1800,2000};
+  const Int_t NBINS_pt = 16;
+  //  Double_t edges_pt[NBINS_pt + 1] = {0,20,40,60,80,100,150,200,300,400,500,600,700,800,900,1000,1200,1400,1600,1800,2000};
+  Double_t edges_pt[NBINS_pt + 1] = {20,30,40,50,60,70,80,90,100,150,200,250,300,350,400,450,500};
 
   TH1D*  den_ele_geneta = new TH1D("den_ele_geneta", "den_ele_geneta", NBINS_eta, edges_eta); 
   TH1D*  num_ele_geneta_all = new TH1D("num_ele_geneta_all", "num_ele_geneta_all", NBINS_eta, edges_eta); 
@@ -601,11 +603,11 @@ void CutOpt::SinglePhoNonIso()
 
       ////define L1 pass/fail                                                                                                                                                               
       bool passL1 = false;
-      //    if (  fabs(eg_eta[i]) > 2.4 ) {
-      // passL1=true;
-      // }
-      //      if ( (fabs(eg_eta[i])<2.4) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>51.) && (eg_l1pho_passQual[i]) ) {
-      if ( (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>51.) && (eg_l1pho_passQual[i]) ) {
+      if (  fabs(eg_eta[i]) > 2.8 ) {
+	passL1=true;
+      }
+      if ( (fabs(eg_eta[i])<2.8) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>51.) && (eg_l1pho_passQual[i]) ) {
+	//if ( (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>51.) && (eg_l1pho_passQual[i]) ) {
         passL1=true;
       }
 
@@ -638,7 +640,7 @@ void CutOpt::SinglePhoNonIso()
       ///////////////////////////////////////////////
       /////// Barrel + Endcap //////////////////////
       //////////////////////////////////////////////
-      if ( (eg_gen_et[i]>0.) &&  (eg_et[i]>180.0) ) {
+      if ( (eg_gen_et[i]>150.) &&  (eg_gen_et[i]<500.0) ) {
 	den_ele_geneta->Fill(eg_gen_eta[i]);
 
 	//all cuts
@@ -681,8 +683,9 @@ void CutOpt::SinglePhoIsoEBonly()
   //  const Int_t NBINS_pt = 6;
   //  Double_t edges_pt[NBINS_pt + 1] = {200,250,300,400,600,800,1000};
 
-  const Int_t NBINS_pt = 26;
-  Double_t edges_pt[NBINS_pt + 1] = {0,20,40,60,80,100,120,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000};
+  const Int_t NBINS_pt = 16;
+  //  Double_t edges_pt[NBINS_pt + 1] = {0,20,40,60,80,100,120,140,160,180,200,250,300,350,400,450,500,600,700,800,900,1000,1200,1400,1600,1800,2000};
+  Double_t edges_pt[NBINS_pt + 1] = {20,30,40,50,60,70,80,90,100,150,200,250,300,350,400,450,500};
 
   TH1D*  den_ele_geneta = new TH1D("den_ele_geneta", "den_ele_geneta", NBINS_eta, edges_eta); 
   TH1D*  num_ele_geneta_all = new TH1D("num_ele_geneta_all", "num_ele_geneta_all", NBINS_eta, edges_eta); 
@@ -712,7 +715,11 @@ void CutOpt::SinglePhoIsoEBonly()
 
       bool passL1 = false;
 
-      if ( (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>51.) && (eg_l1pho_passQual[i]) ) {
+      if (  fabs(eg_eta[i]) > 2.8 ) {
+        passL1=true;
+      }
+
+      if ( (fabs(eg_eta[i])<2.8) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>51.) && (eg_l1pho_passQual[i]) ) {
         passL1=true;
       }
 
@@ -740,7 +747,7 @@ void CutOpt::SinglePhoIsoEBonly()
       ///////////////////////////////////////////////
       /////// Barrel, for eta plot /////////////////
       //////////////////////////////////////////////
-      if ( (eg_gen_et[i]>0.) &&  (eg_et[i]>110.0) ) {
+      if ( (eg_gen_et[i]>100.) &&  (eg_gen_et[i]<500.0) ) {
 	den_ele_geneta->Fill(eg_gen_eta[i]);
 
 	//all cuts
@@ -778,13 +785,14 @@ void CutOpt::DoubleEle()
 
   if (fChain == 0) return;
   
-  TFile* outputFile  = new TFile("hist_DY_DoubleEle.root","RECREATE");
+  TFile* outputFile  = new TFile("hist_Zprime_DoubleEle.root","RECREATE");
 
   const Int_t NBINS_eta = 17;
   Double_t edges_eta[NBINS_eta + 1] = {-3.0,-2.7,-2.4,-2.0,-1.56,-1.44,-1.0,-0.6,-0.2,0.2,0.6,1.0,1.44,1.56,2.0,2.4,2.7,3.0};
 
-  const Int_t NBINS_pt = 13;
-  Double_t edges_pt[NBINS_pt + 1] = {20,25,30,35,40,45,50,55,60,65,70,80,100,150};
+  const Int_t NBINS_pt = 16;
+  //  Double_t edges_pt[NBINS_pt + 1] = {20,25,30,35,40,45,50,55,60,65,70,80,100,150};
+  Double_t edges_pt[NBINS_pt + 1] = {20,30,40,50,60,70,80,90,100,150,200,250,300,350,400,450,500};
 
   TH1D*  den_ele_geneta = new TH1D("den_ele_geneta", "den_ele_geneta", NBINS_eta, edges_eta); 
   TH1D*  num_ele_geneta_all_leg1 = new TH1D("num_ele_geneta_all_leg1", "num_ele_geneta_all_leg1", NBINS_eta, edges_eta); 
@@ -819,7 +827,7 @@ void CutOpt::DoubleEle()
 
       //// Barrel cuts // DoubleEle HLT
       float pms2_cut_EB= 55.0; 
-      float sieie_cut_EB= 0.013; //0.013; 
+      float sieie_cut_EB= 0.014; //0.013; 
       float hoe_EB = (eg_hcalHForHoverE[i])/(eg_energy[i]);
       float hoe_cut_EB = 0.19; 
       ////end of barrel cuts
@@ -827,7 +835,7 @@ void CutOpt::DoubleEle()
       ////endcap cuts // DoubleEle HLT  
       float hoe_EE = (eg_hgcalHForHoverE[i])/(eg_energy[i]);
       float hoe_cut_EE = 0.19; //0.15 + (5.0/(eg_energy[i]));
-      float vv_cut_EE = 0.8*0.8; 
+      float vv_cut_EE = (0.8*0.8)+(0.0008*eg_et[i]); 
       float pms2_cut_EE= 75.0;
       /// end of endcap cuts
 
@@ -853,10 +861,10 @@ void CutOpt::DoubleEle()
       ///
       ////define L1 pass/fail, high pT leg
       bool passL1_highpt = false;
-      if (  fabs(eg_eta[i]) > 2.4 ) {
+      if (  fabs(eg_eta[i]) > 2.8 ) {
 	passL1_highpt=true;
       }
-      if ( (fabs(eg_eta[i])<2.4) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>37.) && (eg_l1pho_passQual[i]) ) {
+      if ( (fabs(eg_eta[i])<2.8) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>37.) && (eg_l1pho_passQual[i]) ) {
 	passL1_highpt=true;
       }
       if ( (fabs(eg_eta[i])<2.4) && (eg_l1ele_et[i]>0) && (eg_l1ele_etThresNonIso[i]>25.) && (eg_l1ele_passQual[i]) ) {
@@ -866,10 +874,10 @@ void CutOpt::DoubleEle()
 
       ////define L1 pass/fail, low pT leg
       bool passL1_lowpt = false;
-      if (  fabs(eg_eta[i]) > 2.4 ) {
+      if (  fabs(eg_eta[i]) > 2.8 ) {
 	passL1_lowpt=true;
       }
-      if ( (fabs(eg_eta[i])<2.4) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>24.) && (eg_l1pho_passQual[i]) ) {
+      if ( (fabs(eg_eta[i])<2.8) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>24.) && (eg_l1pho_passQual[i]) ) {
 	passL1_lowpt=true;
       }
       if ( (fabs(eg_eta[i])<2.4) && (eg_l1ele_et[i]>0) && (eg_l1ele_etThresNonIso[i]>12.) && (eg_l1ele_passQual[i]) ) {
@@ -944,7 +952,7 @@ void CutOpt::DoubleEle()
       ///////////////////////////////////////////////
       /////// Barrel + Endcap //////////////////////
       //////////////////////////////////////////////
-      if ( (eg_gen_et[i]>0.) &&  (eg_et[i]>35.0) ) {
+      if ( (eg_gen_et[i]>40.) &&  (eg_gen_et[i]<500.0) ) {
 	den_ele_geneta->Fill(eg_gen_eta[i]);
 	//
 	//all cuts leg1
@@ -1004,13 +1012,15 @@ void CutOpt::DoublePhoton()
 
   if (fChain == 0) return;
   
-  TFile* outputFile  = new TFile("hist_DY_DoublePho.root","RECREATE");
+  TFile* outputFile  = new TFile("hist_ZPrime_DoublePho.root","RECREATE");
 
   const Int_t NBINS_eta = 17;
   Double_t edges_eta[NBINS_eta + 1] = {-3.0,-2.7,-2.4,-2.0,-1.56,-1.44,-1.0,-0.6,-0.2,0.2,0.6,1.0,1.44,1.56,2.0,2.4,2.7,3.0};
 
-  const Int_t NBINS_pt = 13;
-  Double_t edges_pt[NBINS_pt + 1] = {20,25,30,35,40,45,50,55,60,65,70,80,100,150};
+  const Int_t NBINS_pt = 16;
+  //  Double_t edges_pt[NBINS_pt + 1] = {20,25,30,35,40,45,50,55,60,65,70,80,100,150};
+  //  Double_t edges_pt[NBINS_pt + 1] = {20,30,40,50,60,70,80,100,150,200,300,400,500,600,700,800,900,1000};
+  Double_t edges_pt[NBINS_pt + 1] = {20,30,40,50,60,70,80,90,100,150,200,250,300,350,400,450,500};
 
   const Int_t NBINS_pu = 8;
   Double_t edges_pu[NBINS_pu + 1] = {150,170,180,190,200,210,220,230,250};
@@ -1051,21 +1061,21 @@ void CutOpt::DoublePhoton()
       float sieie_cut_EB= 0.0113;
       float hoe_EB = (eg_hcalHForHoverE[i])/(eg_energy[i]);
       float hoe_cut_EB = 0.18;
-      float ecaliso_cut_EB= 8.5;
-      float hcaliso_cut_EB=11;  //9.5;
+      float ecaliso_cut_EB= 7.5 + (0.02*eg_et[i]);
+      float hcaliso_cut_EB=11 +(0.02*eg_et[i]);  //9.5;
       if ( ( fabs(eg_eta[i]) > 0.8 ) && ( fabs(eg_eta[i]) < 1.479 )  ) {
-      	hcaliso_cut_EB = 12;
+      	hcaliso_cut_EB = 12 +(0.02*eg_et[i]);
       }
       ////end of barrel cuts
       
       ////endcap cuts // DoublePhoton HLT  
       float hoe_EE = (eg_hgcalHForHoverE[i])/(eg_energy[i]);
-      float hoe_cut_EE = 0.125; //0.15 + (5.0/(eg_energy[i]));
-      float vv_cut_EE = 0.8*0.8; //0.76*0.76;
-      float ww_cut_EE = 8*8;
-      float hgcaliso_cut_EE = 140; // 130.0;
+      float hoe_cut_EE = 0.125; 
+      float vv_cut_EE = (0.8*0.8) +(0.0008*eg_et[i]) ;
+      float ww_cut_EE = (8*8) +(0.04*eg_et[i]) ;
+      float hgcaliso_cut_EE = 140 +(0.05*eg_energy[i]);
       if ( ( fabs(eg_eta[i]) > 2.0 ) ) {
-	hgcaliso_cut_EE = 370; //340.0;
+	hgcaliso_cut_EE = 370 +(0.05*eg_energy[i]); 
       }
       /// end of endcap cuts
 
@@ -1088,10 +1098,11 @@ void CutOpt::DoublePhoton()
       ///
       ////define L1 pass/fail, high pT leg
       bool passL1_highpt = false;
-      if (  fabs(eg_eta[i]) > 2.4 ) {
-	passL1_highpt=true;
+      if (  fabs(eg_eta[i]) > 2.8 ) {
+     	passL1_highpt=true;
       }
-      if ( (fabs(eg_eta[i])<2.4) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>37.) && (eg_l1pho_passQual[i]) ) {
+      if ( (fabs(eg_eta[i])<2.8) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>37.) && (eg_l1pho_passQual[i]) ) {
+      //if ( (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>37.) && (eg_l1pho_passQual[i]) ) {
 	passL1_highpt=true;
       }
       if ( (fabs(eg_eta[i])<2.4) && (eg_l1pho_et[i]>0) && (eg_l1pho_etThresIso[i]>22.) && (eg_l1pho_passQual[i]) && (eg_l1pho_passIsol[i]) ) {
@@ -1100,10 +1111,11 @@ void CutOpt::DoublePhoton()
       /////////                                                                                                                                                                                               
       ////define L1 pass/fail, low pT leg                                                                                                                                                                     
       bool passL1_lowpt = false;
-      if (  fabs(eg_eta[i]) > 2.4 ) {
+      if (  fabs(eg_eta[i]) > 2.8 ) {
 	passL1_lowpt=true;
       }
-      if ( (fabs(eg_eta[i])<2.4) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>24.) && (eg_l1pho_passQual[i]) ) {
+      if ( (fabs(eg_eta[i])<2.8) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>24.) && (eg_l1pho_passQual[i]) ) {
+	//if ( (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>24.) && (eg_l1pho_passQual[i]) ) {
 	passL1_lowpt=true;
       }
       if ( (fabs(eg_eta[i])<2.4) && (eg_l1pho_et[i]>0) && (eg_l1pho_etThresIso[i]>12.) && (eg_l1pho_passQual[i]) && (eg_l1pho_passIsol[i]) ) {
@@ -1116,8 +1128,8 @@ void CutOpt::DoublePhoton()
 
 	if (
             (passL1_highpt) &&
-            (hoe<hoe_cut) &&
-            (eg_sigma2vv[i]<vv_cut_EE) &&
+	    (hoe<hoe_cut) &&
+	    (eg_sigma2vv[i]<vv_cut_EE) &&
 	    (eg_sigma2ww[i]<ww_cut_EE) &&  
 	    (eg_hgcaliso_layerclus[i]<hgcaliso_cut_EE) 
 	    ) {
@@ -1126,9 +1138,9 @@ void CutOpt::DoublePhoton()
 
 	if (
             (passL1_lowpt) &&
-            (hoe<hoe_cut) &&
-            (eg_sigma2vv[i]<vv_cut_EE) &&
-	    (eg_sigma2ww[i]<ww_cut_EE)  &&
+	    (hoe<hoe_cut) &&
+	    (eg_sigma2vv[i]<vv_cut_EE) &&
+	    (eg_sigma2ww[i]<ww_cut_EE) &&
 	    (eg_hgcaliso_layerclus[i]<hgcaliso_cut_EE) 
 	    ) {
           num_ele_genpt_EE_leg2_all->Fill(eg_gen_et[i]);
@@ -1166,21 +1178,21 @@ void CutOpt::DoublePhoton()
 	den_ele_genpt_EB->Fill(eg_gen_et[i]);
 
 	if (
-            (passL1_highpt) &&
-            (hoe<hoe_cut) &&
-            (eg_sigmaIEtaIEta[i]<sieie_cut_EB) &&
+	    (passL1_highpt) &&
+	    (hoe<hoe_cut) &&
+	    (eg_sigmaIEtaIEta[i]<sieie_cut_EB) &&
 	    (eg_ecaliso[i]<ecaliso_cut_EB ) &&
-            (eg_hcalPFIsol_default[i]<hcaliso_cut_EB) 
+	    (eg_hcalPFIsol_default[i]<hcaliso_cut_EB) 
 	    ) {
           num_ele_genpt_EB_leg1_all->Fill(eg_gen_et[i]);
         }
 
 	if (
             (passL1_lowpt) &&
-            (hoe<hoe_cut) &&
+	    (hoe<hoe_cut) &&
 	    (eg_sigmaIEtaIEta[i]<sieie_cut_EB) &&
 	    (eg_ecaliso[i]<ecaliso_cut_EB ) &&
-            (eg_hcalPFIsol_default[i]<hcaliso_cut_EB) 
+	    (eg_hcalPFIsol_default[i]<hcaliso_cut_EB) 
 	    ) {
           num_ele_genpt_EB_leg2_all->Fill(eg_gen_et[i]);
         }
@@ -1216,7 +1228,7 @@ void CutOpt::DoublePhoton()
       ///////////////////////////////////////////////
       /////// Barrel + Endcap //////////////////////
       //////////////////////////////////////////////
-      if ( (eg_gen_et[i]>0.) && (eg_et[i]>40.0) ) {
+      if ( (eg_gen_et[i]>40.) && (eg_gen_et[i]<500.0) ) {
 	den_ele_geneta->Fill(eg_gen_eta[i]);
 	//
 	//all cuts leg1

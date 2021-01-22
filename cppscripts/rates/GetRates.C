@@ -8,7 +8,7 @@
 #include <algorithm>    // std::sort
 #include <vector>       // std::vector
 
-void GetRates::SingleEle(float given_pt,float given_absEta_low=0.0,float given_absEta_high=4.0)
+void GetRates::SingleEle(float given_pt,float given_absEta_low=0.0,float given_absEta_high=10.0)
 {
   ///
    std::cout << "Running SingleEle" << std::endl; 
@@ -21,7 +21,7 @@ void GetRates::SingleEle(float given_pt,float given_absEta_low=0.0,float given_a
    float nEvt_passed=0.;
    float nEvt_passed_wt=0.;
 
-   bool WP_tight = 1;
+   bool WP_tight = 0;
    std::cout << "WP_tight " << WP_tight << std::endl;
    if (WP_tight) {
      std::cout << "running WP tight, 70% eff" << std::endl;
@@ -45,7 +45,7 @@ void GetRates::SingleEle(float given_pt,float given_absEta_low=0.0,float given_a
      Long64_t ientry = LoadTree(jentry);
      if (ientry < 0) break;
      nb = fChain->GetEntry(jentry);   nbytes += nb;
-     myweight=weightV2;
+     myweight=weight;
 
      ////
      /////LOOP ele
@@ -53,13 +53,13 @@ void GetRates::SingleEle(float given_pt,float given_absEta_low=0.0,float given_a
       int nEle_passed=0;
       for (int i=0; i<nrEgs; i++) {
 	//// Barrel cuts
-	float ecaliso_cut_EB= (WP_tight==1) ? 4.8 : 7.5; 
-	float hcaliso_cut_EB= (WP_tight==1) ? 9.5 : 13.0; 
-	if ( ( fabs(eg_eta[i]) > 0.8 ) && ( fabs(eg_eta[i]) < 1.479 )  ) {
-	  hcaliso_cut_EB = (WP_tight==1) ? 15.0 : 18.0; 
-	}
+	float ecaliso_cut_EB= (WP_tight==1) ? 4.4+ (0.02*eg_et[i]) : 9.0+ (0.02*eg_et[i]); 
+	float hcaliso_cut_EB= (WP_tight==1) ? 12+(0.02*eg_et[i]) : 19+(0.02*eg_et[i]); 
+	//	if ( ( fabs(eg_eta[i]) > 0.8 ) && ( fabs(eg_eta[i]) < 1.479 )  ) {
+	// hcaliso_cut_EB = (WP_tight==1) ? 15.0+ (0.02*eg_et[i]) : 18.0+ (0.02*eg_et[i]); 
+	//}
 	float pms2_cut_EB= (WP_tight==1) ? 42.0 : 55.0; 
-	float sieie_cut_EB= (WP_tight==1) ? 0.0115 : 0.0129; 
+	float sieie_cut_EB= (WP_tight==1) ? 0.012 : 0.013; 
 	float hoe_EB = (eg_hcalHForHoverE[i])/(eg_energy[i]);
 	float hoe_cut_EB = (WP_tight==1) ? 0.17 : 0.175; 
 	float ooemoop_cut_EB = (WP_tight==1) ? 0.035 : 0.04;
@@ -86,11 +86,11 @@ void GetRates::SingleEle(float given_pt,float given_absEta_low=0.0,float given_a
 	////endcap cuts
 	float hoe_EE = (eg_hgcalHForHoverE[i])/(eg_energy[i]);
 	float hoe_cut_EE = (WP_tight==1) ? 0.15 + (5.0/(eg_energy[i])) : 0.15 + (5.0/(eg_energy[i]));
-	float vv_cut_EE = (WP_tight==1) ? 0.8*0.8 : 0.85*0.85; 
-	float ww_cut_EE = (WP_tight==1) ? 8*8 : 8.5*8.5; 
-	float hgcaliso_cut_EE = (WP_tight==1) ? 130.0 : 150.0;
+	float vv_cut_EE = (WP_tight==1) ? (0.8*0.8)+(0.0008*eg_et[i]) : (0.85*0.85)+(0.0008*eg_et[i]); 
+	float ww_cut_EE = (WP_tight==1) ? (8*8)+(0.04*eg_et[i]) : (8.5*8.5)+(0.04*eg_et[i]) ; 
+	float hgcaliso_cut_EE = (WP_tight==1) ? 130.0+(0.05*eg_energy[i]) : 150.0+ (0.05*eg_energy[i]);
 	if ( ( fabs(eg_eta[i]) > 2.0 ) ) {
-	  hgcaliso_cut_EE = (WP_tight==1) ? 340.0 : 350.0;
+	  hgcaliso_cut_EE = (WP_tight==1) ? 340.0+ (0.05*eg_energy[i]) : 350.0+ (0.05*eg_energy[i]);
 	}
 	float pms2_cut_EE= (WP_tight==1) ? 65.0 : 75.0;
 	float ooemoop_cut_EE = (WP_tight==1) ? 0.01 : 0.04;
@@ -142,12 +142,17 @@ void GetRates::SingleEle(float given_pt,float given_absEta_low=0.0,float given_a
 	
 	}
 
+	//// combined isolation in EB and EE // to reduce rate in EB/EE transition region
+	//	float combinedIso_cut = ecaliso_cut_EB + hcaliso_cut_EB + hgcaliso_cut_EE;
+	//	float combinedIso_var = eg_ecaliso[i] + eg_hcalPFIsol_default[i] + eg_hgcaliso_layerclus[i];
+
 	////define L1 pass/fail
 	bool passL1 = false;
-	if (  fabs(eg_eta[i]) > 2.4 ) {
-	  passL1=true;
+	if (  fabs(eg_eta[i]) > 2.8 ) {
+	passL1=true;
 	}
-	if ( (fabs(eg_eta[i])<2.4) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>51.) && (eg_l1pho_passQual[i]) ) {
+	if ( (fabs(eg_eta[i])<2.8) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>51.) && (eg_l1pho_passQual[i]) ) {
+	  //if ((eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>51.) && (eg_l1pho_passQual[i]) ) {
 	  passL1=true;
 	}
 	if ( (fabs(eg_eta[i])<2.4) && (eg_l1ele_et[i]>0) && (eg_l1ele_etThresNonIso[i]>36.) && (eg_l1ele_passQual[i]) ) {
@@ -176,8 +181,7 @@ void GetRates::SingleEle(float given_pt,float given_absEta_low=0.0,float given_a
 	    (eg_l1iso[i]<trkisol1_cut) &&
 	    (eg_ecaliso[i]<ecaliso_cut_EB ) && 
 	    (eg_hcalPFIsol_default[i]<hcaliso_cut_EB) && 
-	    (eg_sigmaIEtaIEta[i]<sieie_cut_EB) 
-	   
+	     (eg_sigmaIEtaIEta[i]<sieie_cut_EB) 
 	     ) {
 	  nEle_passed=nEle_passed+1;
 	}
@@ -222,7 +226,7 @@ void GetRates::SinglePhoNonIso(float given_pt)
     Long64_t ientry = LoadTree(jentry);
     if (ientry < 0) break;
     nb = fChain->GetEntry(jentry);   nbytes += nb;
-    myweight=weightV2;
+    myweight=weight;
 
     ////
     /////LOOP SC
@@ -257,10 +261,10 @@ void GetRates::SinglePhoNonIso(float given_pt)
 
       ////define L1 pass/fail
       bool passL1 = false;
-      if (  fabs(eg_eta[i]) > 2.4 ) {
+      if (  fabs(eg_eta[i]) > 2.8 ) {
 	passL1=true;
       }
-      if ( (fabs(eg_eta[i])<2.4) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>51.) && (eg_l1pho_passQual[i]) ) {
+      if ( (fabs(eg_eta[i])<2.8) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>51.) && (eg_l1pho_passQual[i]) ) {
 	passL1=true;
       }
 
@@ -318,7 +322,7 @@ void GetRates::SinglePhoIsoEBonly(float given_pt)
     Long64_t ientry = LoadTree(jentry);
     if (ientry < 0) break;
     nb = fChain->GetEntry(jentry);   nbytes += nb;
-    myweight=weightV2;
+    myweight=weight;
 
     ////
     /////LOOP SC
@@ -336,7 +340,11 @@ void GetRates::SinglePhoIsoEBonly(float given_pt)
 
       bool passL1 = false;
 
-      if ( (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>51.) && (eg_l1pho_passQual[i]) ) {
+      if (  fabs(eg_eta[i]) > 2.8 ) {
+        passL1=true;
+      }
+
+      if ( (fabs(eg_eta[i])<2.8) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>51.) && (eg_l1pho_passQual[i]) ) {
 	passL1=true;
       }
 
@@ -402,7 +410,7 @@ void GetRates::DoubleEle(float given_pt=25.0)
      Long64_t ientry = LoadTree(jentry);
      if (ientry < 0) break;
      nb = fChain->GetEntry(jentry);   nbytes += nb;
-     myweight=weightV2;
+     myweight=weight;
 
       int nEle_passed_leg_1=0;
       int nEle_passed_leg_2=0;
@@ -421,7 +429,7 @@ void GetRates::DoubleEle(float given_pt=25.0)
 
 	//// Barrel cuts // DoubleEle HLT
 	float pms2_cut_EB= 55.0; 
-	float sieie_cut_EB= 0.013; 
+	float sieie_cut_EB= 0.014; 
 	float hoe_EB = (eg_hcalHForHoverE[i])/(eg_energy[i]);
 	float hoe_cut_EB = 0.19; 
 	////end of barrel cuts
@@ -429,7 +437,7 @@ void GetRates::DoubleEle(float given_pt=25.0)
 	////endcap cuts // DoubleEle HLT  
 	float hoe_EE = (eg_hgcalHForHoverE[i])/(eg_energy[i]);
 	float hoe_cut_EE = 0.19; 
-	float vv_cut_EE = 0.8*0.8; 
+	float vv_cut_EE = (0.8*0.8)+(0.0008*eg_et[i]) ; 
 	float pms2_cut_EE= 75.0;
 	/// end of endcap cuts
 	
@@ -454,10 +462,10 @@ void GetRates::DoubleEle(float given_pt=25.0)
 	///
 	////define L1 pass/fail, high pT leg
 	bool passL1_highpt = false;
-	if (  fabs(eg_eta[i]) > 2.4 ) {
+	if (  fabs(eg_eta[i]) > 2.8 ) {
 	  passL1_highpt=true;
 	}
-	if ( (fabs(eg_eta[i])<2.4) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>37.) && (eg_l1pho_passQual[i]) ) {
+	if ( (fabs(eg_eta[i])<2.8) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>37.) && (eg_l1pho_passQual[i]) ) {
 	  passL1_highpt=true;
 	}
 	if ( (fabs(eg_eta[i])<2.4) && (eg_l1ele_et[i]>0) && (eg_l1ele_etThresNonIso[i]>25.) && (eg_l1ele_passQual[i]) ) {
@@ -467,10 +475,10 @@ void GetRates::DoubleEle(float given_pt=25.0)
 
 	////define L1 pass/fail, low pT leg
 	bool passL1_lowpt = false;
-	if (  fabs(eg_eta[i]) > 2.4 ) {
+	if (  fabs(eg_eta[i]) > 2.8 ) {
 	  passL1_lowpt=true;
 	}
-	if ( (fabs(eg_eta[i])<2.4) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>24.) && (eg_l1pho_passQual[i]) ) {
+	if ( (fabs(eg_eta[i])<2.8) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>24.) && (eg_l1pho_passQual[i]) ) {
 	  passL1_lowpt=true;
 	}
 	if ( (fabs(eg_eta[i])<2.4) && (eg_l1ele_et[i]>0) && (eg_l1ele_etThresNonIso[i]>12.) && (eg_l1ele_passQual[i]) ) {
@@ -562,7 +570,7 @@ void GetRates::DoublePho(float given_pt1=30.0,float given_pt2=18.0)
      Long64_t ientry = LoadTree(jentry);
      if (ientry < 0) break;
      nb = fChain->GetEntry(jentry);   nbytes += nb;
-     myweight=weightV2;
+     myweight=weight;
 
       int nPho_passed_leg_1=0;
       int nPho_passed_leg_2=0;
@@ -582,21 +590,21 @@ void GetRates::DoublePho(float given_pt1=30.0,float given_pt2=18.0)
 	float sieie_cut_EB= 0.0113; 
 	float hoe_EB = (eg_hcalHForHoverE[i])/(eg_energy[i]);
 	float hoe_cut_EB = 0.18; 
-	float ecaliso_cut_EB=  8.5;
-	float hcaliso_cut_EB= 11;
+	float ecaliso_cut_EB=  7.5 + (0.02*eg_et[i]) ;
+	float hcaliso_cut_EB= 11 + (0.02*eg_et[i]) ;
 	if ( ( fabs(eg_eta[i]) > 0.8 ) && ( fabs(eg_eta[i]) < 1.479 )  ) {
-	  hcaliso_cut_EB = 12; 
+	  hcaliso_cut_EB = 12 +(0.02*eg_et[i]) ; 
 	}
 	////end of barrel cuts
 	
 	////endcap cuts // DoublePho HLT  
 	float hoe_EE = (eg_hgcalHForHoverE[i])/(eg_energy[i]);
 	float hoe_cut_EE = 0.125; 
-	float vv_cut_EE =0.8*0.8; 
-	float ww_cut_EE = 8*8;
-	float hgcaliso_cut_EE =140; 
+	float vv_cut_EE =(0.8*0.8) +(0.0008*eg_et[i]); 
+	float ww_cut_EE = (8*8) +(0.04*eg_et[i]);
+	float hgcaliso_cut_EE =140+(0.05*eg_energy[i]); 
 	if ( ( fabs(eg_eta[i]) > 2.0 ) ) {
-	  hgcaliso_cut_EE = 370; 
+	  hgcaliso_cut_EE = 370+(0.05*eg_energy[i]); 
 	}
 	/// end of endcap cuts
 	
@@ -618,10 +626,10 @@ void GetRates::DoublePho(float given_pt1=30.0,float given_pt2=18.0)
 	///
 	////define L1 pass/fail, high pT leg
 	bool passL1_highpt = false;
-	if (  fabs(eg_eta[i]) > 2.4 ) {
+	if (  fabs(eg_eta[i]) > 2.8 ) {
 	  passL1_highpt=true;
 	}
-	if ( (fabs(eg_eta[i])<2.4) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>37.) && (eg_l1pho_passQual[i]) ) {
+	if ( (fabs(eg_eta[i])<2.8) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>37.) && (eg_l1pho_passQual[i]) ) {
 	  passL1_highpt=true;
 	}
 	if ( (fabs(eg_eta[i])<2.4) && (eg_l1pho_et[i]>0) && (eg_l1pho_etThresIso[i]>22.) && (eg_l1pho_passQual[i]) && (eg_l1pho_passIsol[i]) ) {
@@ -631,10 +639,10 @@ void GetRates::DoublePho(float given_pt1=30.0,float given_pt2=18.0)
 
 	////define L1 pass/fail, low pT leg
 	bool passL1_lowpt = false;
-	if (  fabs(eg_eta[i]) > 2.4 ) {
+	if (  fabs(eg_eta[i]) > 2.8 ) {
 	  passL1_lowpt=true;
 	}
-	if ( (fabs(eg_eta[i])<2.4) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>24.) && (eg_l1pho_passQual[i]) ) {
+	if ( (fabs(eg_eta[i])<2.8) &&  (eg_l1pho_et[i]>0) && (eg_l1pho_etThres[i]>24.) && (eg_l1pho_passQual[i]) ) {
 	  passL1_lowpt=true;
 	}
 	if ( (fabs(eg_eta[i])<2.4) && (eg_l1pho_et[i]>0) && (eg_l1pho_etThresIso[i]>12.) && (eg_l1pho_passQual[i]) && (eg_l1pho_passIsol[i]) ) {
