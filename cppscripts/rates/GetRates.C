@@ -8,10 +8,11 @@
 #include <algorithm>    // std::sort
 #include <vector>       // std::vector
 
-void GetRates::SingleEle(float given_pt,float given_absEta_low=0.0,float given_absEta_high=10.0)
+void GetRates::SingleEle(float given_pt,bool tight=1,float given_absEta_low=0.0,float given_absEta_high=10.0)
 {
   ///
    std::cout << "Running SingleEle" << std::endl; 
+
    if (fChain == 0) return;
 
    Long64_t nentries = fChain->GetEntriesFast();
@@ -21,7 +22,7 @@ void GetRates::SingleEle(float given_pt,float given_absEta_low=0.0,float given_a
    float nEvt_passed=0.;
    float nEvt_passed_wt=0.;
 
-   bool WP_tight = 0;
+   bool WP_tight = tight;
    std::cout << "WP_tight " << WP_tight << std::endl;
    if (WP_tight) {
      std::cout << "running WP tight, 70% eff" << std::endl;
@@ -46,6 +47,7 @@ void GetRates::SingleEle(float given_pt,float given_absEta_low=0.0,float given_a
      if (ientry < 0) break;
      nb = fChain->GetEntry(jentry);   nbytes += nb;
      myweight=weight;
+     if (jentry<10) std::cout << "evt " << jentry << ", " << ientry << "  wt " << myweight << std::endl;
 
      ////
      /////LOOP ele
@@ -765,12 +767,11 @@ void GetRates::DoubleEleIsolated_AsymPt(float given_pt1=23.0, float given_pt2=12
 	  passL1_lowpt_xseed=true;
 	}
 	*/
-
-	////leg_1
+	////asym pt
+	////leg_1 
 	if ( 
 	    (myweight>0.) && 
 	    (eg_et[i]>pt_cut_1) &&  
-	    //(passL1_highpt_TkEle || passL1_highpt_StaEG || passL1_highpt_xseed) &&
 	    (passL1_highpt) &&
 	    (hoe<hoe_cut) &&  
 	    (eg_sigma2vv[i]<vv_cut_EE) &&  
@@ -796,7 +797,6 @@ void GetRates::DoubleEleIsolated_AsymPt(float given_pt1=23.0, float given_pt2=12
 	if ( 
 	    (myweight>0.) && 
 	    (eg_et[i]>pt_cut_2) &&  
-	    //(passL1_lowpt_TkEle || passL1_lowpt_StaEG || passL1_lowpt_xseed) &&
 	    (passL1_lowpt) &&
 	    (hoe<hoe_cut) &&  
 	    (eg_sigma2vv[i]<vv_cut_EE) &&  

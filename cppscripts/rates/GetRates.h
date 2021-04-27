@@ -224,10 +224,11 @@ public :
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
-   virtual void     SingleEle(float given_pt,float absEtaLow,float absEtaHigh);
+   virtual void     SingleEle(float given_pt,bool tight,float absEtaLow,float absEtaHigh);
    virtual void     SinglePhoNonIso(float given_pt);
    virtual void     SinglePhoIsoEBonly(float given_pt);
    virtual void     DoubleEle(float given_pt);
+   virtual void     DoubleEleIsolated_AsymPt(float given_pt1, float given_pt2);
    virtual void     DoublePho(float given_pt1,float given_pt2);
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
@@ -241,12 +242,12 @@ GetRates::GetRates(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/regression_Jan_hadd_Sam_Ntuple/all.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/final/seeded/200/all.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("/eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/regression_Jan_hadd_Sam_Ntuple/all.root");
+         f = new TFile("/eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/final/seeded/200/all.root");
       }
       f->GetObject("egHLTTree",tree);
-      std::cout << "/eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/regression_Jan_hadd_Sam_Ntuple/all.root" << std::endl;
+      std::cout << "/eos/cms/store/group/phys_egamma/swmukher/flat_tree_from_HLTAnalyserPy/final/seeded/200/all.root" << std::endl;
 
    }
    Init(tree);
